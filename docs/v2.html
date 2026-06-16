@@ -1,0 +1,929 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Parse-x: A Literature Review for the Deep Benchmark Framework (v2, reviewed)</title>
+<style>
+@page {
+  size: A4;
+  margin: 1.0in 1.0in 1.0in 1.0in;
+  @bottom-center { content: counter(page); font-family: 'Latin Modern Roman', 'Computer Modern', Georgia, serif; font-size: 9pt; color: #444; }
+}
+html { font-size: 10.5pt; }
+body {
+  font-family: 'Latin Modern Roman', 'Computer Modern', 'CMU Serif', 'STIX Two Text', Georgia, 'Times New Roman', serif;
+  color: #111;
+  line-height: 1.42;
+  text-align: justify;
+  hyphens: auto;
+  max-width: 6.5in;
+  margin: 0 auto;
+}
+h1 {
+  font-size: 17pt;
+  font-weight: bold;
+  text-align: center;
+  margin: 0.4em 0 0.2em 0;
+  line-height: 1.2;
+}
+h1 + p { text-align: center; font-style: italic; color: #444; margin: 0.1em 0; }
+h2 {
+  font-size: 13pt;
+  font-weight: bold;
+  margin: 1.3em 0 0.4em 0;
+  border-bottom: 1px solid #bbb;
+  padding-bottom: 2px;
+}
+h3 {
+  font-size: 11.5pt;
+  font-weight: bold;
+  margin: 0.9em 0 0.3em 0;
+  font-style: italic;
+}
+h4 {
+  font-size: 10.5pt;
+  font-weight: bold;
+  margin: 0.7em 0 0.2em 0;
+}
+p { margin: 0.4em 0; }
+sup.cite { font-size: 0.78em; }
+sup.cite a { color: #1a4f8f; text-decoration: none; }
+ul { margin: 0.3em 0 0.4em 1.3em; padding: 0; }
+li { margin: 0.15em 0; }
+code {
+  font-family: 'Latin Modern Mono', 'CMU Typewriter', 'Courier New', monospace;
+  font-size: 0.92em;
+  background: #f3f3f3;
+  padding: 1px 3px;
+  border-radius: 2px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.6em 0 0.8em 0;
+  font-size: 9.5pt;
+}
+thead { border-top: 1.2px solid #222; border-bottom: 0.8px solid #444; }
+tbody { border-bottom: 1.2px solid #222; }
+th { text-align: left; padding: 4px 6px; font-weight: bold; }
+td { padding: 3px 6px; vertical-align: top; }
+tr + tr td { border-top: 0.4px solid #ddd; }
+a { color: #1a4f8f; text-decoration: none; }
+.ref {
+  font-size: 9pt;
+  margin: 0.15em 0;
+  padding-left: 2.4em;
+  text-indent: -2.4em;
+  text-align: left;
+  hyphens: none;
+  word-break: break-word;
+}
+.refnum { display: inline-block; min-width: 2em; font-weight: bold; }
+.abstract { font-size: 10pt; margin: 0.6em 1em; }
+.abstract h2 { font-size: 11pt; border: none; text-align: center; margin-top: 0; }
+</style>
+</head>
+<body>
+<h1>Parse-x: A Literature Review for the Deep Benchmark Framework</h1>
+
+<p><em>Hyperbots Research, hyperapi-parse-x-research team</em>  </p>
+<p><em>2026-06-16</em></p>
+
+<div class="abstract"><h2>Abstract</h2><p>Document parsing has bifurcated into two literatures with little overlap: a multimodal-LLM benchmark line (OCRBench v2, OmniDocBench, olmOCR-Bench) that reports single aggregate numbers per model, and an in-house or release-discipline benchmark line (SAVIOR-Bench; the Apache-2.0 ParseBench corpus from LlamaIndex re-used with project-specific evaluation discipline) that exposes per-document score vectors, multilingual-quality stratification, and downstream-task lift. This review surveys the prior art for each of the nine measurement dimensions defined by the Parse-x Deep Benchmark Framework (D-OCR, D-PARSE-INTENT, D-LAYOUT, D-BBOX, D-TABLE, D-DOC-QUALITY, D-LANG, D-DOWNSTREAM, D-COST-LATENCY) and the sixteen-document-type taxonomy that cross-cuts them. For each dimension the canonical benchmarks, the relevant model families, and the specific deltas are identified that justify the framework's additional measurement discipline. Three appendices provide a structured model-lineage table covering the fifty-plus models in the project's measurement pool, a datasets-and-contamination posture register, and a vendor-and-API pin table for the closed-source services in scope. The review adopts a descriptive rather than evaluative stance: prior work is named for what it measures and what it does not measure, no winner is selected in advance, and every quantitative claim carries a citation.</p></div>
+
+<h2>1. Introduction</h2>
+
+<p>The Parse-x Deep Benchmark Framework <sup class="cite">[<a href="#ref-25">25</a>]</sup> decomposes the question 'is this document-parsing engine best for finance documents?' into nine orthogonal measurement dimensions and a sixteen-type document taxonomy. Each cell of the resulting matrix is anchored to a public benchmark where possible (ParseBench <sup class="cite">[<a href="#ref-49">49</a>]</sup>, SAVIOR-Bench <sup class="cite">[<a href="#ref-1">1</a>]</sup>, OmniDocBench <sup class="cite">[<a href="#ref-4">4</a>]</sup>, PubTabNet, DocLayNet) and falls back to in-house silver pipelines (BBOX-SILVER-PIPELINE-SPEC) or stratified hold-outs (dataset_95) when public coverage is absent. The framework's publish-gate requires per-document score vectors with bootstrap CI95 (or an explicit attestation label), uniform decoding pins (temperature 0.1, top-p 0.9, max_tokens 2048, seed 20260516), and fine-tune-vs-zero-shot disclosure on every cell.</p>
+
+<p>This literature review serves two purposes. First, it surveys the prior art per dimension so that each new leaderboard cell can be interpreted against the right historical baseline. Second, it surfaces the methodological gaps in that prior art (particularly the absent per-document vectors, the inconsistent fine-tune disclosure, the under-stratified multilingual and quality axes, and the near-total absence of parse-to-downstream lift measurements) that motivate the framework's additional measurement discipline. The contribution claimed is <em>measurement discipline</em>, not new models or new datasets.</p>
+
+<p>The remainder of the paper is organized as the framework dictates. §2 surveys the nine dimensions in order. Appendices A–C provide the model lineage table, the datasets-and-contamination posture register, and the vendor-and-API pin table. Section 3 closes with a discussion of the largest open gates that block first-pass cell publication.</p>
+
+<h2>2. The Nine Measurement Dimensions</h2>
+
+<h2>D-OCR: text recognition transcription</h2>
+
+<p>The D-OCR dimension of Parse-x scores the most primitive question that can be asked of any document-AI engine: given a page image or PDF, does the system recover the document's tokens, and how cleanly? The framework's primary metric is <code>savior_word_recall</code>, a multiset recall over reference tokens taken from SAVIOR-Bench (n=509, IAA 0.761 via fuzzy-string similarity over 187 double-annotated pairs), with <code>savior_word_precision</code>, normalized Levenshtein <code>ocr_edit_distance</code>, and word error rate as secondaries <sup class="cite">[<a href="#ref-1">1</a>]</sup><sup class="cite">[<a href="#ref-2">2</a>]</sup>. The dimension is separated from D-PARSE-INTENT (structured field extraction) and D-DOWNSTREAM (chained pipelines) so that hallucinations and dropped tokens surface as transcription-level signals rather than being masked by a downstream rubric. The publish-gate requires per-document score vectors (for 2000-resample bootstrap CI95) or an explicit <code>provenance: attested</code> label; a discipline that most external OCR leaderboards do not satisfy.</p>
+
+<h3>Prior benchmarks</h3>
+
+<p><strong>OCRBench v2</strong> <sup class="cite">[<a href="#ref-3">3</a>]</sup> is the most widely cited LMM-era OCR benchmark: 10,000 human-verified QA pairs across 23 tasks and 31 scenarios (street scenes, receipts, formulas, diagrams), with a 1,500-image private split. Its headline finding (20 of 22 evaluated LMMs score below 50/100) establishes that OCR is far from saturated for multimodal models. However, OCRBench v2 is a QA-style benchmark: it measures whether a model can <em>answer questions about text</em>, not whether it produces a full faithful transcription. Word-level recall, edit distance, and verbose-hallucination WER patterns (the failure mode SAVIOR-Bench surfaces for PaddleOCR-VL-1.5 and DeepSeek-OCR-2) are not its primary signal <sup class="cite">[<a href="#ref-1">1</a>]</sup>.</p>
+
+<p><strong>OmniDocBench</strong> <sup class="cite">[<a href="#ref-4">4</a>]</sup>, published at CVPR 2025, supplies the strongest <em>document-parsing</em> benchmark in the prior art: nine document sources (academic papers, textbooks, handwritten notes, dense newspapers), 19 layout categories, 15 attribute labels, and end-to-end plus task-specific evaluation modes. It is the canonical leaderboard cited by MinerU2.5 (overall 90.67) <sup class="cite">[<a href="#ref-5">5</a>]</sup> and PaddleOCR-VL-1.5 (94.5% on v1.5) <sup class="cite">[<a href="#ref-6">6</a>]</sup>. OmniDocBench measures text + layout + table jointly through end-to-end edit-distance-style metrics; it does not separate transcription quality from layout fidelity the way Parse-x splits D-OCR from D-LAYOUT, so a system that emits clean text in bad reading order is scored together with one that drops tokens.</p>
+
+<p><strong>olmOCR-Bench</strong> <sup class="cite">[<a href="#ref-7">7</a>]</sup> from AI2 covers 7,000+ test cases across 1,400 documents, with the design constraint that systems must emit plain-text Unicode in natural reading order. olmOCR-2-7B-1025 scores 82.4 on the benchmark <sup class="cite">[<a href="#ref-8">8</a>]</sup>. olmOCR-Bench is English-print-centric and unit-test-rule structured (presence/absence/order checks), which is complementary to but narrower than SAVIOR-Bench's recall/precision/edit-distance triad over a multilingual, low-quality-scan corpus.</p>
+
+<p><strong>SAVIOR-Bench v1</strong> <sup class="cite">[<a href="#ref-1">1</a>]</sup> is the in-house gold the framework primarily anchors on: 509 expert-annotated documents (46.95% UCSF Industry Documents, 17.88% in-house synthetic, 17.49% misc. public financial, 9.04% Inv3D, 8.64% FUNSD), an attested 31-system OCR edit-distance leaderboard, and a documented R1–R10 failure taxonomy. Its scoring discipline is stricter than the public benchmarks (per-doc vectors, IAA reporting) but the corpus is not publicly redistributed and the per-doc vectors for the attested 31-cell leaderboard are not yet recovered; the framework documents this as an open gate (R2).</p>
+
+<p><strong>FUNSD, CORD, and the classical CER/WER leaderboards</strong> <sup class="cite">[<a href="#ref-9">9</a>]</sup> underlie much of the historical OCR literature; they remain useful for printed-form recognition but cover none of the modern failure surfaces (vertical text, logo-embedded text, multilingual + dense layout) that SAVIOR-Bench's failure taxonomy enumerates <sup class="cite">[<a href="#ref-1">1</a>]</sup>.</p>
+
+<h3>Models surveyed</h3>
+
+<p>The dossier inventories ~31 OCR cells in <code>DC-000__ocr-edit-distance-v1</code> <sup class="cite">[<a href="#ref-10">10</a>]</sup>. Grouped by family:</p>
+
+<ul>
+<li><strong>General-purpose document VLMs.</strong> Qwen3-VL-235B, Qwen2.5-VL-3B/7B (the SAVIOR-Train fine-tune base), Qwen3.6-35B-A3B, InternVL2-8B/26B/76B, LLaVA-1.6-34B, GPT-4o / GPT-4o-mini, Gemini-1.5 Flash/Pro, Claude-Sonnet-4.6 <sup class="cite">[<a href="#ref-10">10</a>]</sup>. Most are evaluated zero-shot; SAVIOR fine-tuning on Qwen2.5-VL-7B with LoRA (rank 32, α 64, 5 epochs, 2× H100) lifts word-recall to 0.9294 <sup class="cite">[<a href="#ref-2">2</a>]</sup><sup class="cite">[<a href="#ref-1">1</a>]</sup>.</li>
+<li><strong>OCR-specialist VLMs.</strong> GLM-OCR (edit-distance 0.019, rank-1 specialist on the SAVIOR leaderboard), DeepSeek-OCR-2, GOT-OCR-2.0, DocOwl2 / mPLUG-DocOwl1.5, Fox, TextMonkey, Vary-toy, Nougat-0.1.0, FireRed-OCR, Logics-Parsing-v2, Chandra (<code>datalab-to/chandra-ocr-2</code>) <sup class="cite">[<a href="#ref-10">10</a>]</sup><sup class="cite">[<a href="#ref-1">1</a>]</sup>.</li>
+<li><strong>Decoupled / pipeline parsers.</strong> MinerU 0.9 and MinerU 2.5 (1.2B, coarse-to-fine decoupled, OmniDocBench 90.67) <sup class="cite">[<a href="#ref-5">5</a>]</sup>; Marker-1.0; Surya; PaddleOCR-v4 and PaddleOCR-VL-1.5 (0.9B ERNIE-4.5 backbone, OmniDocBench v1.5 94.5%) <sup class="cite">[<a href="#ref-6">6</a>]</sup>; HyperAPI-PaddleOCR-OURS; olmOCR / olmOCR-2-7B-1025 <sup class="cite">[<a href="#ref-8">8</a>]</sup>.</li>
+<li><strong>Classical engines.</strong> Tesseract-OCR (multilingual restored 2026-06-10 via <code>tesseract-lang</code>), EasyOCR, OpenOCR; Mathpix as a hosted reference <sup class="cite">[<a href="#ref-10">10</a>]</sup>.</li>
+<li><strong>Cloud / vendor systems.</strong> Textract (SAVIOR word-recall 0.9233, #1 zero-shot anchor) <sup class="cite">[<a href="#ref-1">1</a>]</sup>.</li>
+</ul>
+
+<h3>Gaps relative to the framework</h3>
+
+<p>First, prior benchmarks largely score <em>single aggregate numbers per model</em> and do not retain per-document score vectors; OCRBench v2, OmniDocBench, and the SAVIOR attested leaderboard all currently lack the per-doc vectors Parse-x requires for bootstrap CI95 <sup class="cite">[<a href="#ref-3">3</a>]</sup><sup class="cite">[<a href="#ref-4">4</a>]</sup><sup class="cite">[<a href="#ref-1">1</a>]</sup>. Second, the verbose-hallucination pattern (PaddleOCR-VL-1.5: F1 0.726 with WER 2.96; DeepSeek-OCR-2: WER 12.35) only emerges when WER is reported alongside F1 across the same cell, a discipline OCRBench v2's QA framing structurally cannot expose <sup class="cite">[<a href="#ref-1">1</a>]</sup>. Third, no prior benchmark stratifies D-OCR by the Q-LOW/Q-MED/Q-HIGH quality axis the framework defines under D-DOC-QUALITY, so a model's collapse on degraded scans is reported only anecdotally in failure-mode lists <sup class="cite">[<a href="#ref-1">1</a>]</sup><sup class="cite">[<a href="#ref-2">2</a>]</sup>. Fourth, the multilingual axis is underspecified everywhere except OmniDocBench's nine-source mix and PaddleOCR-VL-1.5's Tibetan/Bengali extension <sup class="cite">[<a href="#ref-4">4</a>]</sup><sup class="cite">[<a href="#ref-6">6</a>]</sup>; Parse-x's D-LANG cross-stratification of D-OCR is, on the current literature, novel. Finally, fine-tune-vs-zero-shot disclosure is inconsistent in public leaderboards (a recurring SAVIOR-Bench complaint, R6); the framework's <code>(fine-tuned)</code> tagging functions as both a measurement-disclosure and metric contribution <sup class="cite">[<a href="#ref-1">1</a>]</sup>.</p>
+
+<h2>D-PARSE-INTENT: structured field extraction F1 + WER</h2>
+
+<p>The D-PARSE-INTENT dimension scores a document engine's ability to emit a canonical field-set with values, without a hand-written schema, from a raw page. It is distinct from D-OCR (no transcription objective) and from D-DOWNSTREAM (no chained extractor LLM). The framework pins <code>parse_intent_f1</code> (per-field F1 over the recovered intent fields, ↑) as the primary metric and <code>wer</code> (word error rate on the intent-bearing text subset, ↓) as a secondary metric, exposing a recurring failure pattern in which verbose VLMs hallucinate around the value enough to keep the field recoverable while transcription degrades (e.g. PaddleOCR-VL-1.5 reaching F1 0.726 with WER 2.96 on the inhouse-v1 panel) <sup class="cite">[<a href="#ref-11">11</a>]</sup>. Compared to D-OCR, D-PARSE-INTENT public prior art is markedly thinner: most benchmarks are either narrow-domain (receipts, forms) or vendor-curated, and very few jointly publish a structured-F1 number alongside a transcription error metric on the same documents <sup class="cite">[<a href="#ref-1">1</a>]</sup>.</p>
+
+<h3>Prior benchmarks</h3>
+
+<ul>
+<li><strong>FUNSD</strong> <sup class="cite">[<a href="#ref-9">9</a>]</sup>: 199 noisy scanned forms (149 train / 50 test), 9,707 entities in four classes (header/question/answer/other). The reference task is Semantic Entity Recognition scored by entity-level F1; current systems reach ~92 (LayoutLMv3-large) <sup class="cite">[<a href="#ref-12">12</a>]</sup>. Covers form key-value labelling but does not exercise line-item structure, multi-page reasoning, or transcription error.</li>
+<li><strong>CORD</strong> <sup class="cite">[<a href="#ref-13">13</a>]</sup>: 1,000 Indonesian receipts (800/100/100), 30 entity types in 4 groups (Menu / Void menu / Subtotal / Total). Evaluated with field-level F1 and tree-edit-distance accuracy; LayoutLMv3-large reports 97.46 F1, Donut 91.6 <sup class="cite">[<a href="#ref-12">12</a>]</sup><sup class="cite">[<a href="#ref-14">14</a>]</sup>. Receipt-only, short documents, single language.</li>
+<li><strong>SROIE (ICDAR 2019, Task 3)</strong> <sup class="cite">[<a href="#ref-15">15</a>]</sup>: 626 train / 347 test scanned restaurant receipts with 4 fixed fields (company, date, address, total). The de facto entry-level KIE benchmark; the small, fixed schema is far below the 23-system, free-schema inhouse-v1 panel.</li>
+<li><strong>Kleister NDA / Kleister Charity</strong> <sup class="cite">[<a href="#ref-16">16</a>]</sup>: 540 NDAs (3,229 pages, 2,160 entities) and 2,788 charity reports (61,643 pages, 21,612 entities); long, mixed scanned + born-digital English documents. Strongest models report 81.77 / 83.57 F1. Adds long-document layout, but only English and non-financial-invoice schemas.</li>
+<li><strong>DocILE-2023</strong> <sup class="cite">[<a href="#ref-17">17</a>]</sup>: 6.7k annotated business documents + 100k synthetic + ~1M unlabelled, 55 KILE/LIR classes from invoices/orders, run as an ICDAR-2023 + CLEF-2023 competition with RoBERTa/LayoutLMv3/Table-Transformer baselines. The closest public analogue to the framework's invoice-heavy T-01 doc-type, though it does not score transcription WER alongside KIE F1.</li>
+<li><strong>DeepForm</strong> <sup class="cite">[<a href="#ref-18">18</a>]</sup>: political-ad TV-station disclosure forms maintained by ProPublica; appears as a KIE task in the DUE benchmark <sup class="cite">[<a href="#ref-19">19</a>]</sup> where answer normalization is required. Narrow domain; small held-out size.</li>
+<li><strong>DUE (Document Understanding Evaluation)</strong> <sup class="cite">[<a href="#ref-19">19</a>]</sup>: meta-benchmark assembling DocVQA, InfographicsVQA, Kleister, DeepForm, WikiTableQuestions and others under one QA-style harness; useful as a contamination reference because most modern VLMs have seen at least part of it.</li>
+</ul>
+
+<p>The framework's own <code>parse-intent-inhouse-v1</code> rubric (23 attested systems, n unreported in the attested source <sup class="cite">[<a href="#ref-1">1</a>]</sup>) is internal and intentionally not externalised. The dossier flags that the rubric provenance must not be derived from <code>results.zip</code> (HyperAPI deployed output), and a contamination check (Q-DOSS-2) remains open <sup class="cite">[<a href="#ref-11">11</a>]</sup>.</p>
+
+<h3>Models surveyed</h3>
+
+<ul>
+<li><strong>Layout-aware encoders</strong>: LayoutLMv3 (base + large) <sup class="cite">[<a href="#ref-12">12</a>]</sup>, BROS <sup class="cite">[<a href="#ref-20">20</a>]</sup>, LiLT <sup class="cite">[<a href="#ref-21">21</a>]</sup>, FormNetV2 (86.35 F1 on FUNSD at 2.6× smaller than DocFormer) <sup class="cite">[<a href="#ref-22">22</a>]</sup>.</li>
+<li><strong>OCR-free generative VDU</strong>: Donut (CORD 91.6) <sup class="cite">[<a href="#ref-14">14</a>]</sup> and the OmniParser line (text-spotting + KIE + table) <sup class="cite">[<a href="#ref-23">23</a>]</sup>.</li>
+<li><strong>General multimodal foundation models</strong> evaluated on the inhouse-v1 panel: GPT-4o (well-documented zero-shot anchor at F1 0.8052 / WER 0.4232), GPT-4.1, Claude-Sonnet-4.6, Gemini-2.5-Flash, Gemini-2.5-Pro, Llama-3.2-90B-Vision, Mistral-Large-3-675B <sup class="cite">[<a href="#ref-11">11</a>]</sup><sup class="cite">[<a href="#ref-1">1</a>]</sup>. Per project guardrail [Hyperbots Azure OpenAI routing policy], OpenAI calls route through Azure OpenAI Service.</li>
+<li><strong>VLM/OCR specialists</strong> also scored on inhouse-v1: Qwen2.5-VL-3B/7B-Instruct, Qwen3-VL-32B-Instruct, Qwen3.6-35B-A3B, PaddleOCR-VL-1.5, MinerU2.5-Pro, GLM-OCR, FireRed-OCR, Logics-Parsing-v2, DeepSeek-OCR-2, Qianfan-OCR, DocIntentOCR-3B (under-documented; Q-DF-3 open) <sup class="cite">[<a href="#ref-11">11</a>]</sup>.</li>
+<li><strong>Fine-tuned in-house</strong>: <code>hyperapi-parse-intent (fine-tuned)</code> leads at F1 0.8328 / WER 0.2589 (+0.0276 F1 over the GPT-4o zero-shot anchor) <sup class="cite">[<a href="#ref-1">1</a>]</sup>.</li>
+</ul>
+
+<h3>Gaps relative to the framework</h3>
+
+<p>1. <strong>Joint F1 + WER on identical inputs.</strong> FUNSD/CORD/SROIE/Kleister/DocILE all report a single structured-F1; none publishes a paired transcription WER over the same intent-bearing token subset. The framework's secondary <code>wer</code> metric is what surfaces the "high-F1, exploded-WER" pattern (PaddleOCR-VL-1.5: F1 0.726, WER 2.96) <sup class="cite">[<a href="#ref-11">11</a>]</sup>.</p>
+<p>2. <strong>Schema-free task definition.</strong> SROIE (4 fields) and CORD (30 entities) fix the schema in advance; inhouse-v1 measures whether the engine itself can propose the canonical field-set without a schema prompt, a capability prior public benchmarks do not score <sup class="cite">[<a href="#ref-1">1</a>]</sup>.</p>
+<p>3. <strong>Cross-vendor panel discipline.</strong> Most public KIE papers report 2–6 baselines on one corpus; the inhouse-v1 panel runs 23 systems under pinned decoding with attestation <sup class="cite">[<a href="#ref-1">1</a>]</sup>, matching the apples-to-apples gate but inheriting the contamination question on the rubric itself <sup class="cite">[<a href="#ref-11">11</a>]</sup>.</p>
+<p>4. <strong>CI95 and per-doc vectors.</strong> Almost no prior KIE benchmark publishes bootstrap CI95 or per-doc score vectors; the framework's publish-gate (resamples 2000, seed 20260516) requires them, which is why even the attested SAVIOR cells today carry <code>ci95=null</code> until per-doc vectors are recovered <sup class="cite">[<a href="#ref-1">1</a>]</sup>.</p>
+<p>5. <strong>Contamination posture.</strong> Public KIE corpora (FUNSD, CORD, SROIE, DocILE, Kleister, DeepForm) are widely indexed and likely in modern VLM pretraining mixes; analyses such as <sup class="cite">[<a href="#ref-24">24</a>]</sup> document information-redundancy and lexical-bias problems that inflate scores. The framework's response is a private held-out rubric plus an explicit factory-rerun green-gate.</p>
+<p>6. <strong>Held-out / SDK coverage.</strong> <code>parse-intent</code> is currently outside the pinned SDK surface for live realqa (PENDING-SDK) <sup class="cite">[<a href="#ref-11">11</a>]</sup>; numbers exist only offline, which is a transparency note the public benchmarks do not have to make.</p>
+
+<h2>D-LAYOUT: layout-element accuracy + reading-order (PaIRS)</h2>
+
+<p>D-LAYOUT scores whether a parse engine recovers a document's spatial organization (the tree of titles, paragraphs, tables, figures and captions, and the <em>order</em> a human would read them in) and not merely the characters those regions contain. The Parse-x framework operationalises this as three metrics: <code>layout_element_accuracy</code> (element-match F1 over the gold layout tree), <code>reading_order_accuracy</code> (rank-correlation over the ordered element list), and <code>pairs_layout</code> (PaIRS, a prompt-controlled pairwise z-euclidean spatial-relationship score, vendored from <code>hyprbots/vlm_ocr@1fbbc334</code>) <sup class="cite">[<a href="#ref-25">25</a>]</sup>. The dimension explicitly addresses SAVIOR-Bench Recommendation R8, which flagged that no layout-awareness ground-truth was available in the original SAVIOR corpus and listed the facet as "defined, not yet measured" <sup class="cite">[<a href="#ref-1">1</a>]</sup>.</p>
+
+<h3>Prior benchmarks</h3>
+
+<p><strong>PubLayNet</strong> (IBM, ICDAR 2019) is the de-facto pre-training corpus for document-layout detection: ~360k PubMed Central pages with auto-generated bbox annotations for five classes (text, title, list, table, figure) scored by COCO-style mAP <sup class="cite">[<a href="#ref-26">26</a>]</sup>. Its scale is unmatched but its label set is narrow and its scientific-article distribution is monolingual English and stylistically homogeneous; it has no reading-order annotation and no element-tree.</p>
+
+<p><strong>DocLayNet</strong> (IBM, KDD 2022) hand-annotated 80,863 pages spanning six categories (financial reports, scientific articles, laws, manuals, patents, government tenders) with 11 layout classes; human baselines sit roughly 10 mAP above the strongest detectors at release <sup class="cite">[<a href="#ref-27">27</a>]</sup>. DocLayNet adds class breadth and human-IAA discipline but, like PubLayNet, is a <em>detection</em> benchmark; it scores bboxes, not reading order, and does not score table or figure internal structure.</p>
+
+<p><strong>M6Doc</strong> (SCUT, CVPR 2023) introduces 9,080 modern document pages with <strong>74 fine-grained label types</strong> and 237,116 instances, covering scanned/photographed/PDF formats across textbooks, magazines, newspapers and test papers in Chinese and English <sup class="cite">[<a href="#ref-28">28</a>]</sup>. M6Doc is the most label-rich layout corpus to date but still does not annotate reading order, and its 9k page count makes it more of an evaluation than a pre-training set.</p>
+
+<p><strong>ReadingBank</strong> (Microsoft, paired with LayoutReader, EMNLP 2021) is the canonical reading-order benchmark: ~500k pages where order is harvested as weak supervision from Word-XML and then reprojected onto the rendered PDF; metrics are BLEU / token-rank Average Page-level Accuracy. LayoutReader achieves near-ceiling on the in-distribution split <sup class="cite">[<a href="#ref-29">29</a>]</sup>. ReadingBank's weakness is that order labels inherit Word's linear flow, so multi-column scientific or financial layouts can be undersupported.</p>
+
+<p><strong>OmniDocBench</strong> (OpenDataLab, CVPR 2025) is the closest contemporary to Parse-x: 1,355–1,651 PDF pages, 10 document types, 5 layout types, 5 languages, 100k+ region annotations with reading order, evaluated by Normalised Edit Distance (NED) over the predicted reading sequence <sup class="cite">[<a href="#ref-30">30</a>]</sup>. v1.5 adds layout-type-stratified NED splits. OmniDocBench measures end-to-end reading order via NED but does not isolate <code>pairs_layout</code>-style PC-vs-NPC comparability, and its taxonomy does not align 1:1 with Parse-x's 16-doc-type taxonomy.</p>
+
+<p><strong>SAVIOR-Bench layout facet</strong> is defined (element accuracy, reading-order accuracy, PaIRS) but explicitly <em>not measured</em> in the original release; the corpus carries 509 docs with extraction gold and an IAA-attested 0.761 fuzzy-string agreement on 187 double-annotated pairs, but no layout-tree gold <sup class="cite">[<a href="#ref-1">1</a>]</sup>.</p>
+
+<h3>Models surveyed</h3>
+
+<p>Layout-aware document parsing in 2025–26 stratifies into four families.</p>
+
+<ul>
+<li><strong>Pure layout detectors</strong> trained on PubLayNet/DocLayNet/M6Doc: DiT, LayoutLMv3, VGT (Vision Grid Transformer) <sup class="cite">[<a href="#ref-31">31</a>]</sup>, and YOLO-doc derivatives. Output is bbox + class; no reading order, no transcription.</li>
+<li><strong>Layout-aware document VLMs</strong> that emit structured markup with positional or order tags: <strong>PaddleOCR-VL-0.9B / VL-1.5</strong> use a two-stage pipeline where <strong>PP-DocLayoutV2</strong> detects regions <em>and</em> predicts reading order before the 0.9B VLM transcribes <sup class="cite">[<a href="#ref-32">32</a>]</sup>. In Parse-x measurements, PaddleOCR-VL-1.5 holds the #1 layout-proxy slot at PaIRS 0.8766 on a zero-shot SAVIOR run <sup class="cite">[<a href="#ref-1">1</a>]</sup>.</li>
+<li><strong>Native-bbox OCR-2 models</strong>: <strong>Chandra</strong> (<code>datalab-to/chandra-ocr-2</code>) emits <code>&lt;div data-bbox="x0 y0 x1 y1" data-label="..."&gt;</code> per element, covering all four ParseBench primary metrics natively <sup class="cite">[<a href="#ref-25">25</a>]</sup>; on the n=10 ParseBench table split it reaches PaIRS 0.6472 vs Qwen3.6-A3B 0.4422 vs Tesseract 0.3639, with documented high intra-model variance (0.26–0.9996) driven by timetable-style grid layouts <sup class="cite">[<a href="#ref-10">10</a>]</sup>.</li>
+<li><strong>Reading-order specialists</strong>: <strong>LayoutReader</strong> (seq2seq over text+layout, near-ceiling on ReadingBank) <sup class="cite">[<a href="#ref-29">29</a>]</sup> and the recent <strong>FocalOrder</strong> (focal preference optimization for reading-order detection, 2026) <sup class="cite">[<a href="#ref-33">33</a>]</sup>.</li>
+<li><strong>Flat-OCR baselines</strong>: HyperAPI parse (Paddle backbone) and Tesseract emit no spatial structure; HyperAPI parse scores PaIRS 0.2907, structurally expected for a primitive that returns flat markdown <sup class="cite">[<a href="#ref-10">10</a>]</sup>.</li>
+</ul>
+
+<h3>Gaps relative to the framework</h3>
+
+<p>Three deltas distinguish Parse-x's D-LAYOUT from the prior work above.</p>
+
+<p>1. <strong>Joint element + order + spatial-fidelity scoring.</strong> PubLayNet/DocLayNet/M6Doc score bboxes; ReadingBank scores order; OmniDocBench scores order via NED but not paired-spatial fidelity. Parse-x is, the first framework, to the authors' knowledge, to combine <code>layout_element_accuracy</code> (tree F1) with <code>reading_order_accuracy</code> (rank-correlation) <em>and</em> PaIRS (z-euclidean pairwise spatial) on the same gold corpus, namely ParseBench's <code>layout</code> split (16,325 rules over 500 PDFs) plus the Inv3D upstream share (~46 docs) of SAVIOR <sup class="cite">[<a href="#ref-25">25</a>]</sup>.</p>
+<p>2. <strong>PC-vs-NPC discipline on PaIRS.</strong> SAVIOR §2.2 explicitly retracts any PC-vs-NPC PaIRS contrast <sup class="cite">[<a href="#ref-1">1</a>]</sup>; Parse-x carries the same caveat as a publish-gate condition. No other public benchmark we surveyed flags this comparability boundary.</p>
+<p>3. <strong>Cross-mapping to a 16-doc-type taxonomy.</strong> OmniDocBench's 10 doc-types and DocLayNet's 6 categories are coarser than Parse-x's 16-type taxonomy, and none route layout scores back to a downstream parse-intent F1 (D-DOWNSTREAM) for the same document. The framework's published-snapshot is therefore one PaIRS-zero-shot leader (PaddleOCR-VL-1.5 at 0.8766) and <em>zero</em> <code>layout_element_accuracy</code> / <code>reading_order_accuracy</code> cells; a stub that the ParseBench port (BLK-14) is scheduled to fill <sup class="cite">[<a href="#ref-25">25</a>]</sup>.</p>
+
+<h2>D-BBOX: bounding-box IoU + field-to-region grounding</h2>
+
+<p>D-BBOX scores whether a parse engine can <em>localize</em> what it reads, emitting a bounding box for each token, semantic element, or extracted field, and (under the field-to-region variant) mapping each field in the structured output back to the page region it came from. The framework pins two metrics: <code>bbox_iou</code> (mean IoU of predicted vs. gold boxes over matched tokens) and <code>field_to_region_grounding_accuracy</code> (fraction of extracted fields whose predicted box overlaps the gold token-region at IoU ≥ 0.5) <sup class="cite">[<a href="#ref-34">34</a>]</sup>. The dimension matters because downstream legal, audit, and review workflows demand citation back to the page; a parser that emits well-formed HTML without geometry fails the requirement most relevant to production use <sup class="cite">[<a href="#ref-34">34</a>]</sup>. This is also the dimension where prior art is thinnest. SAVIOR-Bench explicitly logs <code>bbox_iou</code> and <code>field_to_region_grounding_accuracy</code> as <strong>defined-but-not-measured</strong> under risk item R9, because no gold field-box corpus was in scope <sup class="cite">[<a href="#ref-35">35</a>]</sup>.</p>
+
+<h3>Prior benchmarks</h3>
+
+<ul>
+<li><strong>DocLayNet</strong>: 80,863 human-annotated PDF pages with bounding boxes across 11 layout classes (text, title, table, figure, list, page-header, page-footer, etc.), released in COCO format and scored with mAP@IoU[0.50:0.95] <sup class="cite">[<a href="#ref-27">27</a>]</sup>. Strong baselines: Mask R-CNN ResNet-101 reaches 73.5 mAP, Faster R-CNN 73.4, LayoutLMv3 75.1, all roughly 10 points behind inter-annotator agreement <sup class="cite">[<a href="#ref-27">27</a>]</sup>. <strong>What it does not measure relative to our framework:</strong> layout-element boxes only, no field-to-region grounding (no notion of "extract <code>invoice_total</code> → which box did it come from"); single (mostly English) corpus, low table-density.</li>
+<li><strong>PubLayNet</strong>: 358,353 biomedical PDF pages auto-annotated from PMC XML with bounding boxes for {text, title, list, figure, table}; mAP@IoU[0.50:0.95] scoring <sup class="cite">[<a href="#ref-26">26</a>]</sup>. <strong>Does not measure:</strong> narrow domain (PMC research articles), boxes are auto-aligned from XML and known to drift, no field-level grounding, no handwriting/forms.</li>
+<li><strong>FUNSD</strong>: 199 noisy scanned forms (149 train / 50 test) with 9,707 semantic entities over 31,485 word-level boxes and entity links {question, answer, header, other} <sup class="cite">[<a href="#ref-9">9</a>]</sup>. <strong>Does not measure:</strong> tiny scale; only single-page English forms; entity-link grounding is <em>intra-document</em> (Q→A pairs), not field-to-region under a downstream-extraction schema.</li>
+<li><strong>Inv3D</strong>: 25,000 synthetic 3D-warped invoice samples (plus <code>Inv3DReal</code> of 360 real smartphone captures) released with per-token boxes and template-anchored ground truth, originally built for document unwarping <sup class="cite">[<a href="#ref-36">36</a>]</sup>. SAVIOR-Bench's bbox-eligible slice (~9.04%, ~46 docs) draws from Inv3D's upstream boxes <sup class="cite">[<a href="#ref-35">35</a>]</sup>. <strong>Does not measure:</strong> synthetic-dominated, invoice-only domain, no extraction-task field schema layered on top.</li>
+<li><strong>ICDAR 2023 Robust Layout Segmentation Competition (DocLayNet challenge)</strong>: competition track using DocLayNet's COCO format with mAP@IoU[0.50:0.95] over 11 classes <sup class="cite">[<a href="#ref-37">37</a>]</sup>. <strong>Does not measure:</strong> layout segmentation in isolation; no end-to-end "parse-then-localize-the-field" task.</li>
+<li><strong>SAVIOR-Bench R9 ("bbox grounding")</strong>: defines <code>bbox_iou</code> and <code>field_to_region_grounding_accuracy</code> over a planned financial-document corpus but logs them as <em>not yet measured</em>; flagged as the single largest unmeasured surface in the benchmark <sup class="cite">[<a href="#ref-35">35</a>]</sup>.</li>
+<li><strong>Silver-bbox pipeline (this project)</strong>: internal spec <sup class="cite">[<a href="#ref-38">38</a>]</sup> auto-derives token boxes from digital PDFs via PyMuPDF with a pdfplumber 10% cross-check (IoU &lt; 0.95 → <code>silver_confidence: low</code>); every cell is stamped <code>gold_kind: "silver-pymupdf"</code> and may never be flipped to gold without human annotation. Unblocks drift/agreement signals on digital PDFs; explicitly <strong>not leaderboard-publishable</strong> for accuracy claims.</li>
+</ul>
+
+<h3>Models surveyed</h3>
+
+<ul>
+<li><strong>Native bbox-emitting OCR engines.</strong> <strong>Chandra</strong> (<code>datalab-to/chandra-ocr-2</code>) emits <code>&lt;div data-bbox="x0 y0 x1 y1" data-label="..."&gt;</code> per element in its HTML output (block-type label plus bounding box for every text block, table, and image); this is, per our smoke verification on 2026-05-26, the first parse engine in scope to natively emit all four ParseBench primary metric surfaces (bbox_iou, layout_element_accuracy, reading_order_accuracy, GTRM) <sup class="cite">[<a href="#ref-39">39</a>]</sup><sup class="cite">[<a href="#ref-34">34</a>]</sup>. <strong>Surya</strong> (<code>datalab-to/surya</code>) emits layout boxes and benchmarks on PubLayNet/DocLayNet using a coverage-based scorer (≥0.5 = match) rather than IoU; reports precision 0.782 on DocLayNet, 0.751 on BCE <sup class="cite">[<a href="#ref-40">40</a>]</sup>. <strong>KOSMOS-2.5</strong> is a multimodal literate model that generates "spatially-aware text" (line text concatenated with bounding boxes via a special operator) for document text recognition <sup class="cite">[<a href="#ref-41">41</a>]</sup>.</li>
+<li><strong>Layout-detector models scored on DocLayNet/PubLayNet.</strong> Mask R-CNN ResNet-101 (73.5 mAP), Faster R-CNN (73.4), YOLOv5 family, LayoutLMv3 (75.1 mAP with text-modality fusion) <sup class="cite">[<a href="#ref-27">27</a>]</sup>. These are detection-only; they do not parse content.</li>
+<li><strong>Document-VLMs with weak/no geometry.</strong> GPT-4o, Gemini-1.5-Pro, Qwen2-VL/Qwen3-VL, InternVL2, mPLUG-DocOwl1.5, GOT-OCR-2.0 (per DOSSIER §2 model lists <sup class="cite">[<a href="#ref-42">42</a>]</sup>) generally do <em>not</em> emit per-token boxes in their default decoders; they pass D-OCR but fail D-BBOX structurally.</li>
+<li><strong>Plain-text OCR primitives.</strong> Tesseract, PaddleOCR-v4/VL-1.5, and the HyperAPI parse primitive emit text without spatial geometry on the public surface; D-BBOX is structurally untestable on these without an SDK change (carry-over Q-DF-7) <sup class="cite">[<a href="#ref-34">34</a>]</sup>.</li>
+</ul>
+
+<h3>Gaps relative to the framework</h3>
+
+<p>1. <strong>Field-to-region grounding is essentially un-benchmarked.</strong> DocLayNet, PubLayNet, ICDAR-2023 measure <em>layout</em> boxes; FUNSD measures <em>entity</em> boxes; none score "extracted field <code>total_amount</code> → originating page region at IoU ≥ 0.5". Our <code>field_to_region_grounding_accuracy</code> is the framework-novel surface, building on SAVIOR-Bench R9's definition <sup class="cite">[<a href="#ref-35">35</a>]</sup>.</p>
+<p>2. <strong>Gold paucity for field boxes.</strong> Inv3D + FUNSD give ~90 docs of upstream gold token boxes; ParseBench's <code>layout</code> split adds 16,325 rules across 500 PDFs but at element (not field-schema) granularity <sup class="cite">[<a href="#ref-43">43</a>]</sup>. Closing R9 with gold is a partner-annotation ask; the silver-bbox pipeline closes it <em>partially</em> without funding <sup class="cite">[<a href="#ref-38">38</a>]</sup>.</p>
+<p>3. <strong>Apples-to-oranges scoring across prior benchmarks.</strong> DocLayNet uses COCO mAP@[0.50:0.95]; Surya's published numbers use coverage-with-0.5-match (not IoU); FUNSD reports F1 over entity bbox+label. Our framework pins a single <code>bbox_iou</code> mean over matched tokens plus the IoU ≥ 0.5 grounding rate, so cross-engine cells are comparable.</p>
+<p>4. <strong>Native-bbox emission is rare.</strong> Of ~40 v0-runnable models in the DOSSIER, only Chandra (and partially Surya and KOSMOS-2.5) emit geometry by default; the rest fail D-BBOX <em>structurally</em>, not numerically. The framework reports these as "structural 0" rather than as a quality gap <sup class="cite">[<a href="#ref-34">34</a>]</sup>.</p>
+<p>5. <strong>Domain coverage.</strong> Prior corpora are biomedical (PubLayNet), corporate-mixed (DocLayNet), forms (FUNSD), or invoice-synthetic (Inv3D). The 16-doc-type taxonomy surfaces uncovered slices (handwritten notes, tax forms, statements, contracts) where no D-BBOX cell is currently runnable even with the silver pipeline.</p>
+
+<h2>D-TABLE: GTRM + TableRecordMatch + cell F1</h2>
+
+<p>Table structure recognition (TSR) is the hard core of enterprise document parsing: invoices, packing slips, bank statements, 10-Q financials, and insurance schedules are dominated by tabular content with spanning headers, merged cells, borderless rules, repeated multi-page headers, and locale-specific currency formatting <sup class="cite">[<a href="#ref-44">44</a>]</sup>. A high word-recall transcription can still get the row/column assignment wrong, which destroys downstream extraction <sup class="cite">[<a href="#ref-44">44</a>]</sup>. D-TABLE in the Parse-x framework therefore scores table-bearing documents (T-04 bank statement, T-11 financial statement, T-16 packing slip) on whether the engine recovers both the grid topology and the cell content, using the ParseBench <code>table</code> split (n=503 ground-truth HTML tables, 284 documents) with <strong>GTRM</strong> (the unweighted average of GriTS and TableRecordMatch) as primary, and TEDS plus cell-F1 as secondaries [parsebench2026, framework2026].</p>
+
+<h3>Prior benchmarks</h3>
+
+<ul>
+<li><strong>PubTabNet</strong> (Zhong et al., IBM): ~568k scientific tables from PMC articles, distributed with HTML structure-and-content ground truth. It introduced <strong>TEDS</strong> (Tree-Edit-Distance-based Similarity) and <strong>TEDS-Struct</strong>, and remains the canonical TSR pretrain anchor <sup class="cite">[<a href="#ref-45">45</a>]</sup>. Limit relative to D-TABLE: scientific-paper distribution only; no enterprise finance distribution, no bbox geometry on every cell, and TEDS is sensitive to small text noise so structure vs content errors are conflated unless paired with TEDS-Struct <sup class="cite">[<a href="#ref-44">44</a>]</sup>.</li>
+<li><strong>FinTabNet</strong> (Zheng et al., IBM, WACV 2021): ~113k tables across ~70k pages from S&amp;P-500 annual reports, with cell bboxes and structure (train/val/test = 91,596/10,635/10,656) <sup class="cite">[<a href="#ref-46">46</a>]</sup>. Closest public proxy to enterprise finance tables, but the distribution is digital-PDF-rendered 10-Ks only, with no scans, no invoices, no packing slips, no multi-page table stitching across the doc-type taxonomy the framework requires.</li>
+<li><strong>PubTables-1M</strong> (Smock et al., CVPR 2022): ~948k tables with joint detection + structure annotations; introduced the <strong>Table Transformer (TATR)</strong> baseline and the <strong>GriTS</strong> metric family (GriTS-Top topology, GriTS-Con content, GriTS-Loc IoU geometry), formally published at ICDAR 2023 [pubtables1m2022, grits2023]. GriTS operates on the 2D cell grid (not a tree) and handles non-tree spanning structures more robustly than TEDS <sup class="cite">[<a href="#ref-47">47</a>]</sup>. Limit: same scientific-PDF bias as PubTabNet; no enterprise scans; GriTS-Loc requires bbox GT that most non-PubTables corpora lack.</li>
+<li><strong>ICDAR-2013 Table Competition and ICDAR-2019 cTDaR</strong>: small, hard mixed-domain sets including historical and handwritten tables; canonical home of <strong>adjacency-relation F1</strong> (precision/recall over horizontally/vertically adjacent cell pairs whose endpoint text and direction both match), which decomposes errors by split / merge / shift type <sup class="cite">[<a href="#ref-44">44</a>]</sup>. Limit: corpus is small and not enterprise-representative; metric depends on a normalizer the framework must pin identically to pred and gold.</li>
+<li><strong>TableBank</strong> (Li et al., LREC 2020): ~417k tables harvested from Word and LaTeX sources, primarily a <em>detection</em> benchmark with weak structure labels <sup class="cite">[<a href="#ref-44">44</a>]</sup>. Useful for detection breadth; insufficient for cell-F1 / GTRM scoring.</li>
+<li><strong>RD-TableBench</strong> (Reducto, 2025): open-source enterprise-leaning table benchmark with messy real-world scans; designed as an industry counterweight to scientific-only TSR sets <sup class="cite">[<a href="#ref-48">48</a>]</sup>. Recent and small relative to FinTabNet; metric protocols vary by reporter.</li>
+<li><strong>ParseBench <code>table</code> split</strong> (LlamaIndex / community, 2026): 503 pages across 284 documents, distributed under Apache-2.0 with per-doc HTML <code>expected_markdown</code>; uses <strong>GTRM</strong> = mean(GriTS, <strong>TableRecordMatch</strong>) where TableRecordMatch treats a table as a bag of records keyed by column header(s) and is therefore insensitive to row/column reordering but heavily penalizes transposed/dropped headers <sup class="cite">[<a href="#ref-49">49</a>]</sup>. This is the gold the framework ports for D-TABLE; what it does <em>not</em> cover is doc-type stratification (T-04 vs T-11 vs T-16 are not separable inside the 503 without re-labeling) or the Q-LOW / multilingual strata.</li>
+</ul>
+
+<h3>Models surveyed</h3>
+
+<ul>
+<li><strong>Specialist TSR.</strong> Table Transformer (TATR) on PubTables-1M <sup class="cite">[<a href="#ref-50">50</a>]</sup>; earlier lineage DeepDeSRT, TableNet, SPLERGE, LGPMA, TableFormer / EDD (the PubTabNet HTML-token convention) <sup class="cite">[<a href="#ref-44">44</a>]</sup>; PaddleOCR PP-Structure as a layout+TSR+OCR cascade. Camelot/Tabula are rule-based (lattice/stream), strong only on ruled digital PDFs.</li>
+<li><strong>OCR-2.0 / end-to-end structure emitters.</strong> GOT-OCR2.0 (HTML/Markdown/LaTeX tables); Nougat (academic-PDF Markdown, brittle off-domain); MinerU / PDF-Extract-Kit pipelines that wrap specialist TSR <sup class="cite">[<a href="#ref-44">44</a>]</sup>.</li>
+<li><strong>Prompted VLMs (the framework's open-prompted SOTA route).</strong> Qwen2.5-VL 3B/7B/32B/72B (HTML/Markdown table emission with bbox-grounded cells); InternVL 2.5 / 3; dots.ocr; PaddleOCR-VL; olmOCR; DocOwl/UReader; MiniCPM-V; Phi-3.5/Phi-4-vision <sup class="cite">[<a href="#ref-44">44</a>]</sup>. Chandra (datalab-to/chandra-ocr-2) was smoke-verified inside the framework for native bbox-emitting table extraction with per-doc PaIRS range 0.2614–0.9996 on the ParseBench n=10 table sub-slice; financial tables score up to 0.9996, grid-heavy timetable layouts collapse to ~0.32 <sup class="cite">[<a href="#ref-25">25</a>]</sup>.</li>
+<li><strong>Closed frontier (anchor-only, not products).</strong> GPT-4o/4.1, Gemini 1.5/2.x, Claude 3.x, used as scientific anchors, never as winners <sup class="cite">[<a href="#ref-44">44</a>]</sup>.</li>
+</ul>
+
+<h3>Gaps relative to the framework</h3>
+
+<p>1. <strong>GTRM is novel and not yet in the public scorer ecosystem.</strong> GriTS and TableRecordMatch each exist [grits2023, parsebench2026], but their unweighted average is a ParseBench-internal convention; the framework must port the implementation deterministically (Zhang–Shasha for TEDS, factored row/col alignment + Hungarian for GriTS, identical lenient HTML normalizer applied to pred and gold) before any GTRM cell is publishable [tabular-survey2026, framework2026]. As of the framework snapshot, <strong>zero GTRM cells have been published</strong>; TR-000 is REGISTERED-NOT-YET-RUN <sup class="cite">[<a href="#ref-25">25</a>]</sup>.</p>
+<p>2. <strong>Doc-type stratification.</strong> No prior table benchmark cleanly separates bank statement vs 10-Q vs packing slip vs insurance schedule; the framework's 16-doc-type taxonomy crossed with D-TABLE exposes per-doc-type collapse modes that PubTables-1M / FinTabNet aggregate away.</p>
+<p>3. <strong>Quality and language strata.</strong> PubTabNet/FinTabNet/PubTables-1M are digital-PDF clean; ICDAR-2019 cTDaR is the only hard-scan anchor and is small. D-TABLE × D-DOC-QUALITY (Q-LOW JPEG-Q40 / rotated / blurred re-renders) and × D-LANG overlays are framework-native crosses with <strong>no public corpus</strong> today.</p>
+<p>4. <strong>Proxy-metric honesty.</strong> The current Azure DI long-invoice cell carries line-count preservation 0.6396 / line-item set-F1 0.3439 (proxies, not GTRM) and the framework explicitly marks them as such rather than back-fitting to GTRM <sup class="cite">[<a href="#ref-25">25</a>]</sup>. Prior leaderboards have substituted proxies without disclosure.</p>
+<p>5. <strong>Apples-to-apples decoding pins.</strong> ParseBench-reported numbers mix zero-shot vs fine-tuned VLMs, varying TEDS variants, and unpinned decoding <sup class="cite">[<a href="#ref-44">44</a>]</sup>; the framework's pinned-prompt + decoding contract is the missing comparability layer.</p>
+
+<h2>D-DOC-QUALITY: stratification by document quality (Q-HIGH/MED/LOW)</h2>
+
+<p>D-DOC-QUALITY asks a question that the headline accuracy number on a parse benchmark almost always hides: when the input is a degraded scan (JPEG-Q40 compression, ≥5° rotation, motion or defocus blur, low DPI), does the engine's accuracy collapse, drift, or hold? In the Parse-x framework it is explicitly a <strong>stratification</strong> of D-OCR and D-PARSE-INTENT rather than an independent score, with the primary metric being the signed delta in <code>savior_word_recall</code> between Q-HIGH and Q-LOW renderings of the same corpus under identical decoding pins, and a Q-MED midpoint reported for monotonicity diagnosis <sup class="cite">[<a href="#ref-51">51</a>]</sup>. The degradation recipe is borrowed from <sup class="cite">[<a href="#ref-52">52</a>]</sup> §10 R4. Failure modes F1 (vertical/rotated text), F5 (degraded scan) and F8 (stylized text) are expected to activate disproportionately in Q-LOW <sup class="cite">[<a href="#ref-51">51</a>]</sup>.</p>
+
+<h3>Prior benchmarks</h3>
+
+<ul>
+<li><strong>SAVIOR-Bench v1</strong>: 509 documents drawn from UCSF (47%), synthetic (18%), financial (17%), Inv3D (9%) and FUNSD (9%), with IAA 0.761 over 187 double-annotated pairs. The corpus deliberately includes "low-quality PDFs" and "degraded scans" as a class label, but the published results are aggregate-only: no per-quality slice, no degradation track, and no rendered Q-HIGH/Q-LOW counterparts of the same document. The authors flag this themselves as recommendation R4 ("No degradation / robustness tracks ... not done, no degraded corpus exists") <sup class="cite">[<a href="#ref-52">52</a>]</sup>.</li>
+<li><strong>DocIQ / DIQA-5000</strong>: a subjective document-image-quality dataset that partitions 5,000 corrupted images into five degradation classes (luminance, distortion, blurriness, noise, compression). It is a quality-<em>assessment</em> dataset (predict the MOS), not a parse-accuracy benchmark; it does not score OCR or layout downstream of the degradation <sup class="cite">[<a href="#ref-53">53</a>]</sup>.</li>
+<li><strong>DocUNet</strong>: 130 mobile-camera captures of 65 paper documents (receipts, letters, fliers, magazines, books) annotated with the flat-scan ground truth and split into "easy" (single crease/fold) and "hard" (heavy wrinkles) cases. It scores geometric dewarping (MS-SSIM, Local Distortion), not parse fidelity, but is the closest public source of paired clean/degraded scans of the same content <sup class="cite">[<a href="#ref-54">54</a>]</sup>.</li>
+<li><strong>RVL-CDIP</strong>: 400,000 grayscale ~100 DPI documents from 1980s–90s scanners, which are <em>intrinsically</em> low-quality but not stratified: there is no Q-HIGH counterpart of the same document. Subsequent audits also report 8.1% label noise (range 1.6–16.9% by class), which contaminates any quality-versus-accuracy slope estimated on top of it <sup class="cite">[<a href="#ref-55">55</a>]</sup><sup class="cite">[<a href="#ref-56">56</a>]</sup>.</li>
+<li><strong>Historical-OCR benchmarks (IMPACT, olmOCR-Bench historical split)</strong>: IMPACT supplies degraded historical print as a single domain; olmOCR reports 82.3% on old math scans dropping to 47.7% on general historical scans, demonstrating the degradation gap but, again, with no controlled stratification of the same source at multiple quality tiers <sup class="cite">[<a href="#ref-7">7</a>]</sup><sup class="cite">[<a href="#ref-57">57</a>]</sup>.</li>
+<li><strong>Augraphy</strong>: a data-augmentation <em>library</em> (ink bleed, jitter, lighting, scanner artefacts) widely used to synthesise degraded training data; it provides the operators that a Q-LOW renderer needs but is not itself a benchmark <sup class="cite">[<a href="#ref-58">58</a>]</sup>.</li>
+<li><strong>SOULSHINE / bol-grn (Hyperbots-internal)</strong>: 22 BoL PDFs (soulshine1) + 22 byte-identical bol-grn-test inputs (soulshine2); native mixed-quality PNG-derived scans are present (Eskimo 140-page, CJ Logistics 56-page outliers) but no gold and no quality stratification, only OCR-sweep counts (Tesseract 22/22, PaddleOCR 15/22) <sup class="cite">[<a href="#ref-59">59</a>]</sup>.</li>
+</ul>
+
+<h3>Models surveyed</h3>
+
+<p>Models likely to be measured under D-DOC-QUALITY are drawn from the same families already measured on D-OCR / D-PARSE-INTENT in the project dossier <sup class="cite">[<a href="#ref-42">42</a>]</sup>:</p>
+
+<ul>
+<li><strong>OSS document-parse VLMs</strong>: Chandra (<code>datalab-to/chandra-ocr-2</code>), Qwen3.6-35B-A3B, Qwen2.5-VL-3B/7B/72B, Qwen3-VL-32B/235B, MinerU-2.5 / MinerU-2.5-Pro-2604, PaddleOCR-VL-1.5, Surya, Marker-1.0, Nougat-0.1.0, mPLUG-DocOwl 1.5 / DocOwl2, GOT-OCR-2.0, FireRed-OCR, DeepSeek-OCR-2, Logics-Parsing-v2.</li>
+<li><strong>Closed VLMs accessible via API</strong>: GPT-4o, GPT-4.1, Gemini 1.5/2.5 Flash and Pro, Claude Sonnet 4.6, Mistral-Large-3-675B, Llama-3.2-90B-Vision; routed via Azure OpenAI for the OpenAI family per project preference.</li>
+<li><strong>Legacy/baseline OCR</strong>: Tesseract-OCR, PaddleOCR-v4, EasyOCR, OpenOCR, Mathpix, HyperAPI parse (paddle-backed).</li>
+<li><strong>Document-image-quality assessment heads (auxiliary)</strong>: DocIQ feature-fusion network <sup class="cite">[<a href="#ref-53">53</a>]</sup> and the no-reference text-line DIQA model <sup class="cite">[<a href="#ref-60">60</a>]</sup>; not parsers, but candidates for predicting the Q-stratum a document will land in pre-flight.</li>
+</ul>
+
+<p>Prior measurements on these models almost never report per-quality slices; the F-B study panel (Chandra/Qwen3.6/Tesseract/HyperAPI-parse on ParseBench n=10) is aggregate only <sup class="cite">[<a href="#ref-42">42</a>]</sup>.</p>
+
+<h3>Gaps relative to the framework</h3>
+
+<p>1. <strong>No public benchmark renders the same document at controlled Q tiers.</strong> SAVIOR-Bench labels low-quality as a <em>class</em> but does not pair it with a high-quality counterpart of the same document; DocUNet pairs warped vs flat but on a geometric axis, not on JPEG/blur/DPI; RVL-CDIP and IMPACT are intrinsically low-quality with no clean twin <sup class="cite">[<a href="#ref-52">52</a>]</sup><sup class="cite">[<a href="#ref-54">54</a>]</sup><sup class="cite">[<a href="#ref-55">55</a>]</sup><sup class="cite">[<a href="#ref-57">57</a>]</sup>. The Parse-x publish-gate of "Q-HIGH and Q-LOW counterparts of the same dataset, same model, same prompt, same decoding" therefore has no off-the-shelf source and must be built; the spec proposes synthetic re-renders of SAVIOR-Bench with frozen ImageMagick/Pillow degradation seeds <sup class="cite">[<a href="#ref-51">51</a>]</sup>.</p>
+<p>2. <strong>No signed-delta metric is standard.</strong> Robustness studies of VLMs under common corruptions report aggregated accuracy drops <sup class="cite">[<a href="#ref-61">61</a>]</sup><sup class="cite">[<a href="#ref-62">62</a>]</sup> but do not pin the metric to a parse-specific recall (e.g. <code>savior_word_recall</code>) nor publish per-document deltas that would let a downstream consumer flag fragile engines.</p>
+<p>3. <strong>Failure-mode incidence is unreported.</strong> F1/F5/F8 incidences in the Q-LOW stratum are explicitly called out by Parse-x; no prior benchmark publishes per-failure-mode F-scores stratified by quality <sup class="cite">[<a href="#ref-52">52</a>]</sup><sup class="cite">[<a href="#ref-51">51</a>]</sup>.</p>
+<p>4. <strong>Internal datasets are not yet stratified either.</strong> The SOULSHINE BoL corpus is native mixed-quality but has no gold and no Q-tier labels <sup class="cite">[<a href="#ref-59">59</a>]</sup>; today's snapshot is "zero Q-* stratified cells" <sup class="cite">[<a href="#ref-51">51</a>]</sup>.</p>
+<p>5. <strong>Quality-assessment heads are not coupled to parse benchmarks.</strong> DocIQ and DIQA-5000 predict subjective quality but are not run as gates upstream of a parse leaderboard <sup class="cite">[<a href="#ref-53">53</a>]</sup><sup class="cite">[<a href="#ref-60">60</a>]</sup>; Parse-x's Q-tier assignment is currently rule-based (JPEG-Q40/rotation/blur/DPI), leaving an open question of whether learned IQA scores should replace the rules.</p>
+
+<p>Limited prior art segments parse accuracy by quality tier on the <em>same content</em>; this is the principal contribution opportunity for the D-DOC-QUALITY dimension.</p>
+
+<h2>D-LANG: multilingual evaluation overlays (EN/DE/FR/ES/ZH/JA/AR)</h2>
+
+<p>D-LANG asks a simple but operationally critical question: does an engine's transcription and parse quality hold when the <em>same</em> document template is rendered in a non-English language or script? The Parse-x framework spec defines this dimension as a <strong>stratification overlay</strong>, not a standalone task; the primary metric is the <em>signed delta</em> in <code>savior_word_recall</code> (D-OCR) and field-level parse accuracy (D-PARSE-INTENT) between an L-EN baseline and each of L-DE/FR/ES/ZH/JA/AR strata <sup class="cite">[<a href="#ref-51">51</a>]</sup>. This framing is motivated by SAVIOR-Bench's Pillar-6 finding that a "multilingual / very-dense-layout" residual cluster persists even after fine-tuning, i.e., the gap is real and is not closed by SAVIOR-Train <sup class="cite">[<a href="#ref-1">1</a>]</sup>. The framework's gold-construction recipe (rendering translated text into the same LibreOffice template, plus native partner annotation for L-ZH/JA/AR) is explicitly designed to hold layout constant so any delta is attributable to script and language, not template drift <sup class="cite">[<a href="#ref-51">51</a>]</sup>.</p>
+
+<h3>Prior benchmarks</h3>
+
+<ul>
+<li><strong>MTVQA</strong> (ByteDance, 2024; ACL Findings 2025): 6,778 human-annotated QA pairs over 2,116 text-centric images across 9 low-resource languages (AR, DE, FR, IT, JA, KO, RU, TH, VI). Reports GPT-4o/4V/Claude-3/Gemini all "with large room for improvement"; per-language accuracy is the primary metric <sup class="cite">[<a href="#ref-63">63</a>]</sup>. <strong>Does not cover</strong>: ZH, ES; no layout-held-constant control; no separation of OCR error from VQA-reasoning error, so cannot be used directly as a D-OCR overlay.</li>
+<li><strong>XFUND</strong> (Microsoft, ACL Findings 2022): 1,393 forms in 7 languages (ZH, JA, ES, FR, IT, DE, PT), 199 per language, with SER and RE tasks; extension of the English FUNSD <sup class="cite">[<a href="#ref-64">64</a>]</sup>. <strong>Does not cover</strong>: AR, EN (defers to FUNSD), and provides only form-style documents, narrow over the Parse-x 16-doc-type taxonomy. Metric is entity-level F1, not transcription-level edit distance, so it does not score D-OCR directly.</li>
+<li><strong>OCRBench v2</strong> (Liu et al., arXiv 2501.00321): bilingual (EN/ZH) benchmark of 10,000 human-verified QA pairs across 31 scenarios, with a 1,500-image private split <sup class="cite">[<a href="#ref-3">3</a>]</sup>. <strong>Does not cover</strong>: any of DE/FR/ES/JA/AR; the EN/ZH split is the binary axis, not the 7-language overlay Parse-x requires.</li>
+<li><strong>MDPBench</strong> (cited in OCRBench v2 ecosystem): 3,400 document images across 17 languages including Simplified/Traditional Chinese, EN, AR, DE, ES, FR, JA, the closest existing match to the Parse-x 7-language target set <sup class="cite">[<a href="#ref-65">65</a>]</sup>. <strong>Does not cover</strong>: layout-controlled rendering of the same template across languages, so per-language deltas conflate template variance with language variance.</li>
+<li><strong>M3DocVQA / M3DocRAG</strong> (Cho et al., arXiv 2411.04952, ICCV 2025 Workshop): 3,000+ PDFs, 40,000+ pages for multi-page multi-document VQA <sup class="cite">[<a href="#ref-66">66</a>]</sup>. <strong>Does not cover</strong>: language stratification is incidental rather than designed; primarily an EN long-document retrieval benchmark.</li>
+<li><strong>M4-ViteVQA</strong> (NeurIPS D&amp;B 2022): 7,620 video clips, 25,123 QA pairs over 9 categories for video scene-text VQA <sup class="cite">[<a href="#ref-67">67</a>]</sup>. <strong>Does not cover</strong>: documents (it is video-scene-text), and is largely monolingual; useful only as a reference for video-OCR multilingual extensions, not D-LANG itself.</li>
+<li><strong>Language-specific OCR corpora</strong>: SCUT-EPT, 50,000 handwritten Chinese exam-paper text lines, 4,250 character classes, the standard Chinese HCTR benchmark <sup class="cite">[<a href="#ref-68">68</a>]</sup>; MTWI, Chinese web-image scene text (2018 ICPR competition track, ~20k images) <sup class="cite">[<a href="#ref-69">69</a>]</sup>; and <strong>synthetic Japanese</strong> lines used to bootstrap PaddleOCR's <code>japan</code> model <sup class="cite">[<a href="#ref-70">70</a>]</sup>. These provide per-script transcription gold but are not template-aligned to any English baseline.</li>
+</ul>
+
+<h3>Models surveyed</h3>
+
+<p>From DOSSIER §2 the v0-runnable OCR/VLM panel includes models with explicit multilingual coverage and models that are English-only by default, a contrast our overlay is designed to expose:</p>
+
+<ul>
+<li><strong>Multilingual-by-design</strong>: <strong>PaddleOCR-VL-1.5</strong> and <strong>PaddleOCR-v4</strong> (CN/EN/JP/KR plus 80+ alphabet languages via <code>--lang</code> flag) <sup class="cite">[<a href="#ref-70">70</a>]</sup>; <strong>Qwen2-VL-7B/72B</strong> and <strong>Qwen3-VL-235B</strong> (Alibaba, multilingual text+vision pretraining covering ZH/EN/JA/KO/DE/FR/ES/AR) <sup class="cite">[<a href="#ref-71">71</a>]</sup>; <strong>InternVL2-8B/26B/76B</strong> (multilingual pretraining including ZH/EN) <sup class="cite">[<a href="#ref-72">72</a>]</sup>; <strong>GLM-OCR</strong> and <strong>MinerU-2.5</strong> (Chinese-first OSS); <strong>GPT-4o</strong>, <strong>Gemini-1.5-Flash/Pro</strong> (broad multilingual VQA, evaluated on MTVQA) <sup class="cite">[<a href="#ref-63">63</a>]</sup>; <strong>Mathpix</strong> and <strong>Textract</strong> (multilingual mode by configuration).</li>
+<li><strong>English-first / multilingual-by-pack</strong>: <strong>Tesseract-OCR</strong> ships English by default; multilingual support requires the <code>tesseract-lang</code> data pack (165 traineddata files, 685.7 MB) which the Parse-x harness only installed on 2026-06-10, before which Chinese inputs threw <code>UnicodeDecodeError</code> and Tesseract <code>text_content</code> scored 0.0 on the diverse n=10 ParseBench split <sup class="cite">[<a href="#ref-42">42</a>]</sup>. This is exactly the structural failure mode D-LANG is meant to surface.</li>
+<li><strong>Latin-script-leaning</strong>: <strong>Marker-1.0</strong>, <strong>Nougat-0.1.0</strong>, <strong>GOT-OCR-2.0</strong>, strong on EN academic PDFs, with limited or undocumented L-ZH/JA/AR coverage <sup class="cite">[<a href="#ref-42">42</a>]</sup>.</li>
+</ul>
+
+<h3>Gaps relative to the framework</h3>
+
+<p>1. <strong>No prior benchmark holds layout constant across the L-EN→L-* axis.</strong> XFUND, MTVQA and MDPBench all vary template and language together; Parse-x's LibreOffice-rendered translation overlay is the first to isolate language as a single-variable delta on a fixed template <sup class="cite">[<a href="#ref-51">51</a>]</sup>.</p>
+<p>2. <strong>Per-language D-OCR vs D-PARSE-INTENT separation is absent in prior art.</strong> MTVQA, M3DocVQA and OCRBench v2 score end-to-end answer accuracy, conflating recognition error with reasoning error. Parse-x decomposes the delta into D-OCR (word recall) and D-PARSE-INTENT (field-level) per language stratum.</p>
+<p>3. <strong>SAVIOR's F9 "multilingual residual" has no per-language counts</strong>; the SAVIOR PDF explicitly states "no per-class counts available" for the multilingual residual cluster <sup class="cite">[<a href="#ref-1">1</a>]</sup>. Parse-x's 7-language stratified report directly fills this measurement hole.</p>
+<p>4. <strong>English-only-by-default tooling is invisible to prior benchmarks</strong> that ship a multilingual harness. Parse-x logs the Tesseract-without-tesseract-lang failure as a first-class result, not a setup bug, surfacing a procurement-relevant gap <sup class="cite">[<a href="#ref-42">42</a>]</sup>.</p>
+<p>5. <strong>L-AR (RTL script) coverage is thin everywhere.</strong> Among prior benchmarks only MTVQA and MDPBench include Arabic; ZH/JA/AR partner annotation is gated in Parse-x v0 (Q-DF-5) <sup class="cite">[<a href="#ref-51">51</a>]</sup>, an honest scope limitation rather than a coverage claim.</p>
+
+<h2>D-DOWNSTREAM: parse → downstream extract F1 (parse-lift; new CEO-required dimension)</h2>
+
+<p>D-DOWNSTREAM scores a parse engine not by how well its output <em>reads</em> but by how well it <em>feeds the next stage</em>. Concretely, a frozen field-extractor (Qwen 3.6-35B-A3B in v0, pinned at <code>T=0.1, top_p=0.9, max_tokens=2048, seed=20260516</code>) is run twice per document: once conditioned on <code>parse(doc) → text</code>, once on the raw page image. The primary metric is <code>downstream_extract_micro_f1</code>; the headline is <code>parse_lift = downstream_extract_micro_f1 − no_parse_extract_micro_f1</code>, with paired-bootstrap CI95 over docs in the spirit of <sup class="cite">[<a href="#ref-73">73</a>]</sup>. Positive lift indicates that parse contributes measurable value to the pipeline; zero or negative lift indicates that the parse stage adds no value over a direct vision-LLM baseline. The dimension is, to the authors' knowledge, not previously formalized in parse benchmarks: virtually all prior parse leaderboards score the parse string intrinsically (edit distance, BLEU-on-markdown, layout F1, table TEDS) and infer downstream utility only by analogy. D-DOWNSTREAM addresses that inference gap by measuring it directly. Per the framework spec (lines 140–172), today's snapshot is zero published cells; harness wiring for <code>extractor_pin</code> and the paired-lift computation is on the F-A phase list.</p>
+
+<h3>Prior benchmarks</h3>
+
+<p>Prior art splits into three buckets, none of which is a clean parse-lift benchmark.</p>
+
+<p><strong>Intrinsic KIE leaderboards.</strong> SROIE (626 train / 347 test receipts, four entity fields) and CORD (1,000 receipts, 30 labels) are the canonical end-task KIE sets; both report field-level F1 against gold but condition the extractor on <em>gold or dataset-provided OCR boxes</em>, not on a swappable parse engine <sup class="cite">[<a href="#ref-74">74</a>]</sup><sup class="cite">[<a href="#ref-75">75</a>]</sup>. LayoutLMv3 reaches 97.46 F1 on CORD and LayoutLM-large 95.2 on SROIE <sup class="cite">[<a href="#ref-76">76</a>]</sup>. These measure extractor quality given fixed text; they do not vary the parser nor compute a parse-vs-no-parse lift. FUNSD (149/50 forms) <sup class="cite">[<a href="#ref-77">77</a>]</sup> is analogous for form understanding.</p>
+
+<p><strong>Document VQA / end-task substitutes.</strong> DocVQA (50k questions over 12,767 industry document images) <sup class="cite">[<a href="#ref-78">78</a>]</sup> is sometimes used as a proxy for "did parse help": OCR-pipeline answers vs direct VQA. Recent direct-VLM systems (Agentic Document Extraction, 99.16 on DocVQA) outperform OCR pipelines by 3.2 pp GT-in-Pred <sup class="cite">[<a href="#ref-79">79</a>]</sup>, which is exactly the "parse may be net-negative" signal D-DOWNSTREAM is built to surface; however, DocVQA scores answer strings, not field-set micro-F1, and varies extractor and parser jointly.</p>
+
+<p><strong>OCR-quality-impact studies.</strong> van Strien et al. <sup class="cite">[<a href="#ref-80">80</a>]</sup> assessed six downstream NLP tasks (NER, dependency parsing, IR, topic modelling, LM fine-tuning, sentence segmentation) as a function of OCR character-error rate on historical newspapers, finding consistent task-level degradation and recommending ≥90% OCR quality. Chiron et al. <sup class="cite">[<a href="#ref-81">81</a>]</sup> showed retrieval MAP drops materially with OCR error on a 22k-document Portuguese IR collection. Both <em>demonstrate</em> that intrinsic OCR scores predict downstream loss weakly, but neither defines a paired-lift metric nor pins a single extractor across engines.</p>
+
+<p><strong>Composite parsing benchmarks.</strong> SAVIOR-Bench <sup class="cite">[<a href="#ref-1">1</a>]</sup> defines <code>parse = extraction + layout + bbox</code>; its Facet-1 extraction sub-score (parse-intent F1 / WER, in-house leaderboard; SAVIOR-Train fine-tune at F1 0.8328 / WER 0.2589; GPT-4o zero-shot 0.8052 / 0.4232) is the closest sibling, but it scores the parser's <em>own</em> extraction head; there is no frozen-downstream-extractor pin, so engines with strong native heads (e.g. layout-aware VLMs) and engines that emit only markdown text (e.g. Tesseract) are not compared apples-to-apples on downstream utility. OmniParser <sup class="cite">[<a href="#ref-23">23</a>]</sup> unifies text spotting, KIE, and table recognition into one model but again co-trains parse and extract; OmniDocBench <sup class="cite">[<a href="#ref-4">4</a>]</sup> scores parse intrinsically across doc types.</p>
+
+<p>The honest summary: <strong>limited prior art on paired parse-lift with a frozen extractor.</strong> ASR has a long tradition of WER vs downstream-NLU evaluations and MT has paired-bootstrap significance since <sup class="cite">[<a href="#ref-73">73</a>]</sup>, but the parse-then-extract pipeline has not standardised the analog.</p>
+
+<h3>Models surveyed</h3>
+
+<p>In-scope as <strong>parse engines</strong> (varied across the D-DOWNSTREAM cell row): HyperAPI parse (Hyperbots production primitive), Chandra (layout+bbox+table), MinerU 2.5 / MinerU2.5-Pro-2604-1.2B, PaddleOCR-VL-1.5, Marker-1.0, Surya, DocOwl2 / mPLUG-DocOwl1.5, Nougat-0.1.0, GOT-OCR-2.0, DeepSeek-OCR-2, Logics-Parsing-v2, Tesseract-OCR (deterministic-text baseline), per DOSSIER §2.x model rosters <sup class="cite">[<a href="#ref-10">10</a>]</sup>.</p>
+
+<p>In-scope as <strong>frozen extractor pins</strong> (one chosen, all engines share it): the v0 pin is Qwen 3.6-35B-A3B (Hyperbots IP fine-tune, served at <code>http://135.233.113.234:6006/v1</code>; DH-001 FieldRecall 0.4099 at n=95, CI95 [0.3454, 0.4784], 2026-06-10) <sup class="cite">[<a href="#ref-10">10</a>]</sup>. Candidate alternate pins for sensitivity checks: Qwen3-VL-32B-Instruct, GPT-4.1 / GPT-5.4 thinking via Azure OpenAI, Claude Sonnet 4.6, Gemini 2.5 Pro, Mistral-Large-3-675B, Llama-3.2-90B-Vision; but if the pin changes, every cell re-runs.</p>
+
+<h3>Gaps relative to the framework</h3>
+
+<p>1. <strong>No prior benchmark publishes <code>parse_lift</code> with paired-bootstrap CI.</strong> SROIE/CORD/FUNSD vary the extractor while holding text fixed; D-DOWNSTREAM does the inverse (frozen extractor, varied parser) and reports the <em>paired</em> difference per doc per <sup class="cite">[<a href="#ref-73">73</a>]</sup>. SAVIOR-Bench reports per-engine extraction but not a swapped-extractor lift.</p>
+
+<p>2. <strong>No prior benchmark reports per-doc-type lift across a 16-type taxonomy.</strong> Aggregate F1 hides that parse may lift on T-07 bank-statement (long tabular pages) and degrade on T-08 cheque (short image where direct VQA wins); the framework requires a 16-row table per engine and a <code>weighted_parse_lift</code> aggregate.</p>
+
+<p>3. <strong>Extractor-leakage is unaddressed in prior pipelines.</strong> Because no prior public benchmark pins the extractor, the question "is the lift you measured a property of parse or of an extractor trained on these docs?" is unanswerable. The framework names the risk explicitly (Q-DF-2; Qwen 3.6 is a Hyperbots IP fine-tune; contamination audit is a follow-on item).</p>
+
+<p>4. <strong>Image-only doc handling.</strong> OCR-impact studies <sup class="cite">[<a href="#ref-80">80</a>]</sup> hold text-OCR as the only input; D-DOWNSTREAM specifies that the baseline leg for image-only docs (T-08 cheque PNG) is raw image to the same extractor, so the no-parse baseline is well-defined for every doc type.</p>
+
+<p>5. <strong>Engine-error honesty.</strong> Long-doc 300s timeouts in the extract leg surface as <code>engine-error</code> cells rather than silent skips (BLK-4), preserving the integrity of the lift mean.</p>
+
+<h2>D-COST-LATENCY: $/correct and p50/p95/p99 latency</h2>
+
+<p>The D-COST-LATENCY dimension asks whether a parse engine is shippable, not just accurate. The Parse-x framework spec defines its primary metrics as <code>latency_p50_ms</code>, <code>latency_p95_ms</code>, <code>latency_p99_ms</code>, and <code>dollars_per_correct_call</code> (cost divided by count of calls that clear the accuracy threshold of the relevant primary metric), with failure rate and throughput-at-concurrency-1 as secondary metrics <sup class="cite">[<a href="#ref-51">51</a>]</sup>. The "$/correct" formulation reflects a design choice: a low-cost engine with 40% failure rate does not represent low effective cost, and an engine with high p99 timeout rate does not represent low effective latency. This dimension also runs as a secondary on every accuracy cell, which is unusual; most parse/OCR benchmarks ignore wall-clock and price entirely, and most LLM efficiency benchmarks ignore correctness.</p>
+
+<h3>Prior benchmarks</h3>
+
+<p><strong>HELM (Stanford CRFM).</strong> HELM is the canonical "holistic" framework: each of its 16 core scenarios is scored on 7 metrics including efficiency-as-latency and efficiency-as-cost alongside accuracy, calibration, robustness, fairness, bias, and toxicity [helm2022, helmdocs2026]. Efficient-HELM further offers fractional-sample runs that preserve ranking with far fewer tokens <sup class="cite">[<a href="#ref-82">82</a>]</sup>. Relative to Parse-x, HELM measures <em>idealized</em> inference cost (denoised energy/$ estimates, often per query token count rather than wall-clock under load) on text-only scenarios; it does not normalize cost against per-task correctness, and its document/vision coverage (VHELM) is shallow on parse-style tasks like table-cell or bbox extraction <sup class="cite">[<a href="#ref-83">83</a>]</sup>.</p>
+
+<p><strong>Artificial Analysis.</strong> A widely used third-party leaderboard that pins all models to the same probe hardware and reports median output speed (P50 over 72 hours), time-to-first-token latency, and blended input/output price per million tokens <sup class="cite">[<a href="#ref-84">84</a>]</sup>. By their March 2026 cut, the price spread across frontier models is roughly 250x bottom-to-top and YoY prices have dropped ~80% <sup class="cite">[<a href="#ref-85">85</a>]</sup>. The methodology is rigorous on serving-side metrics but the workload is short prompt/short completion chat (not multi-page PDFs with image tokens) and there is no parse-correctness gate.</p>
+
+<p><strong>MLPerf Inference.</strong> MLCommons' MLPerf Inference v5.1 and v6.0 are the hardware-vendor standard, with audited submissions reporting Offline tokens/sec and Server p99 TTFT for models like Llama-3.1-8B and GPT-OSS-120B; v6.0 specifically tracks p99 TTFT for MoE-routed serving (e.g., a 2,903 → 2,001 ms reduction via the BLAZE routing patch) [mlperf51-2025, mlperfv6-2026]. MLPerf measures serving-stack efficiency under SLOs, but the "tasks" are LLM-shaped (chat, summarization), not document parse with ground-truth gold; $/correct is not a MLPerf concept.</p>
+
+<p><strong>LLM-inference latency surveys.</strong> Production-oriented metric guides (BentoML, GMI Cloud) codify the p50/p95/p99 + TTFT + ITL + throughput stack and explicitly warn that "a 0.4 s p50 / 4 s p99 looks great in demos and breaks in production" [bentomlmetrics2026, gmicloud2026]. These are methodology references, not benchmarks per se.</p>
+
+<p><strong>Vendor pricing pages and OCR-cost surveys.</strong> Mistral OCR is published at $1–2 per 1,000 pages <sup class="cite">[<a href="#ref-86">86</a>]</sup>; Google Document AI ranges $1.50–$30 per 1k pages by processor; AWS Textract is $1.50/1k for basic OCR and $65/1k for forms-and-tables <sup class="cite">[<a href="#ref-87">87</a>]</sup>. Frontier VLM passthrough (e.g., Gemini 2.5 Pro on a scanned page ≈ $0.13/page) costs ~60–167x more than self-hosted OCR-VLM pipelines [parslicost2025, ofoxocr2026]. None of these prices are joined to a per-task correctness gate.</p>
+
+<p><strong>SOURCE-EXTRACT VLM-OCR (Hyperbots internal corpus).</strong> The on-disk SOURCE-EXTRACT benchmark reports fine-tuned-Qwen-VL inference at p50 2,548 ms / p99 3,319 ms, 3% failure, and infrastructure-derived $0.000191 per successful call (≈ $0.19 / 1k) on A100-40GB at ~$2/hr <sup class="cite">[<a href="#ref-2">2</a>]</sup>. Absent from that report are p90/p999, full latency histograms, and per-model LoRA cost amortization: exactly the secondary metrics Parse-x flags as gaps.</p>
+
+<h3>Models surveyed</h3>
+
+<p>Relevant model families for this dimension fall into four tiers:</p>
+
+<ul>
+<li><strong>Frontier hosted VLMs</strong> (Gemini 2.5 Pro, GPT-5.x via Azure OpenAI per [Hyperbots Azure OpenAI routing policy], Claude 4.x): high per-page cost (~$0.05–$0.13/page), high p50 latency on multi-image inputs, but strong accuracy [artificialanalysis2026, parslicost2025].</li>
+<li><strong>Cheap hosted OCR</strong> (Mistral OCR 3, Google Document AI OCR, AWS Textract OCR): $1.50–$2 / 1k pages, sub-second-per-page typical, narrow output schema [mistralocr2025, docaicost2026].</li>
+<li><strong>OSS local VLM/OCR</strong> (GLM-OCR 0.9B at 94.62 OmniDocBench, PaddleOCR-VL-1.5 at 94.50, MinerU-2.5, Chandra): negligible marginal $ if amortized, but p50 latency varies from sub-second (PaddleOCR) to ~8.5 s/page (Chandra smoke test, 528 prompt + 821 completion tokens) [ofoxocr2026, parsexframework2026].</li>
+<li><strong>Fine-tuned proprietary</strong> (SAVIOR-Train Qwen-VL LoRA): p50 2.5 s, $0.19 / 1k successful on A100 <sup class="cite">[<a href="#ref-2">2</a>]</sup>.</li>
+<li><strong>Serving-stack baselines</strong> (Llama-3.1-8B, GPT-OSS-120B per MLPerf): not parse models, but their published p99 TTFT envelopes set the floor for what an LLM-judge or downstream-extract leg can add to total wall-clock [mlperf51-2025, mlperfv6-2026].</li>
+</ul>
+
+<h3>Gaps relative to the framework</h3>
+
+<p>Three deltas distinguish Parse-x D-COST-LATENCY from the prior art:</p>
+
+<p>1. <strong>$/correct as a primary, not a derived metric.</strong> HELM, Artificial Analysis, and MLPerf all report cost OR accuracy but never divide them at the cell level. Parse-x incorporates the accuracy gate per dimension (e.g., D-OCR edit-distance threshold) into the cost denominator, so a 40%-failure engine reflects that failure in the headline number <sup class="cite">[<a href="#ref-51">51</a>]</sup>.</p>
+<p>2. <strong>Full p50/p95/p99 + failure rate on every accuracy cell.</strong> Most academic parse benchmarks (OmniDocBench, ParseBench, DocVQA) publish a single accuracy column and no wall-clock at all <sup class="cite">[<a href="#ref-88">88</a>]</sup>. Parse-x requires latency as a secondary on every cell and primary on the cost-cascade ensemble (E5), making cross-cell tail-latency comparisons possible.</p>
+<p>3. <strong>Price-list-pinned cost in <code>_meta</code>.</strong> Prior benchmarks either use vendor list prices (Artificial Analysis) or infrastructure cost (MLPerf) but rarely commit to a pinned snapshot for reproducibility. Parse-x records the price-list timestamp per cell, which matters in a market where YoY prices fell ~80% <sup class="cite">[<a href="#ref-85">85</a>]</sup>. Limited prior art on this specific reproducibility move.</p>
+
+<p>Scope limitation: Parse-x does not yet measure energy-per-correct (kWh, gCO₂e), which HELM-v2 and MLPerf Power do track; this is a known follow-on, not a claimed strength.</p>
+
+<h2>Appendix A. Model Lineage</h2>
+
+<p>Scope: ~50 models surveyed in DOSSIER §2.1 (OCR family, 31 cells) and §2.2 (parse-intent family, 19 cells) <sup class="cite">[<a href="#ref-10">10</a>]</sup>. Each row lists base architecture, training data (as publicly disclosed), license, version pin (commit / release tag / <code>PENDING-PIN</code>), and one primary citation. Rows we could only confirm via the DOSSIER list, without an authoritative model card or paper read at table-build time, are clustered at the bottom under "Verified-via-DOSSIER-only; deep-citation PENDING" rather than fabricated.</p>
+
+<h3>A.1. Verified lineage</h3>
+
+<table>
+<thead><tr><th>Model</th><th>Family</th><th>Base architecture</th><th>Training data</th><th>License</th><th>Version pin</th><th>Citation</th></tr></thead>
+<tbody>
+<tr><td>Tesseract-OCR</td><td>OCR-classical</td><td>LSTM line recognizer (Tesseract 4/5)</td><td>100+ langs, Google internal + community traineddata</td><td>Apache-2.0</td><td>5.3.x (DOSSIER <code>BLOCKED-LANG CLEARED 2026-06-10</code>)</td><td><sup class="cite">[<a href="#ref-89">89</a>]</sup></td></tr>
+<tr><td>EasyOCR</td><td>OCR-classical</td><td>CRNN + CRAFT detector</td><td>Synthetic + COCO-Text + ICDAR</td><td>Apache-2.0</td><td>PENDING-PIN</td><td><sup class="cite">[<a href="#ref-90">90</a>]</sup></td></tr>
+<tr><td>PaddleOCR-v4</td><td>OCR-classical</td><td>PP-OCRv4 (DBNet det + SVTR rec)</td><td>Internal Baidu + open Chinese corpora</td><td>Apache-2.0</td><td>v2.7 / PP-OCRv4 release</td><td><sup class="cite">[<a href="#ref-70">70</a>]</sup></td></tr>
+<tr><td>PaddleOCR-VL-1.5</td><td>OCR-VLM</td><td>PaddleOCR-VL (0.9B; ERNIE-4.5-0.3B LM + NaViT-style visual enc)</td><td>Disclosed in tech report; multilingual doc corpus</td><td>Apache-2.0</td><td>v1.5 (HF <code>PaddlePaddle/PaddleOCR-VL</code>)</td><td><sup class="cite">[<a href="#ref-32">32</a>]</sup></td></tr>
+<tr><td>OpenOCR</td><td>OCR-classical</td><td>Modular det+rec (SVTR / DBNet)</td><td>Open academic OCR corpora</td><td>Apache-2.0</td><td>PENDING-PIN</td><td><sup class="cite">[<a href="#ref-91">91</a>]</sup></td></tr>
+<tr><td>Surya</td><td>OCR-pipeline</td><td>Det/rec/layout/order ensemble (custom encoders)</td><td>Common Crawl PDFs + synthetic</td><td>GPL-3.0 / commercial dual</td><td><code>datalab-to/surya</code> PENDING-PIN</td><td><sup class="cite">[<a href="#ref-92">92</a>]</sup></td></tr>
+<tr><td>Marker-1.0</td><td>OCR-pipeline</td><td>Surya + heuristic post-processors → markdown</td><td>Same as Surya</td><td>GPL-3.0 / commercial dual</td><td>v1.0</td><td><sup class="cite">[<a href="#ref-93">93</a>]</sup></td></tr>
+<tr><td>MinerU-0.9</td><td>OCR-pipeline</td><td>LayoutLMv3 + PaddleOCR + UniMERNet</td><td>OpenDataLab internal</td><td>AGPL-3.0</td><td>v0.9.x</td><td><sup class="cite">[<a href="#ref-94">94</a>]</sup></td></tr>
+<tr><td>MinerU-2.5</td><td>OCR-pipeline</td><td>MinerU v2.5 (refactored; VLM-assisted)</td><td>OpenDataLab + extended</td><td>AGPL-3.0</td><td>v2.5</td><td><sup class="cite">[<a href="#ref-95">95</a>]</sup></td></tr>
+<tr><td>MinerU2.5-Pro-2604-1.2B</td><td>Parse-intent VLM</td><td>1.2B VLM trained for doc parsing</td><td>Per MinerU 2.5 tech report</td><td>AGPL-3.0 (model card)</td><td><code>opendatalab/MinerU2.5-...-1.2B</code></td><td><sup class="cite">[<a href="#ref-95">95</a>]</sup></td></tr>
+<tr><td>Nougat-0.1.0</td><td>OCR-VLM</td><td>Swin encoder + mBART decoder</td><td>arXiv PDFs (academic; ~8M pages)</td><td>CC-BY-NC-4.0</td><td>v0.1.0</td><td><sup class="cite">[<a href="#ref-96">96</a>]</sup></td></tr>
+<tr><td>GOT-OCR-2.0</td><td>OCR-VLM</td><td>Vary-style 580M encoder + Qwen 0.5B decoder</td><td>Synthetic + scene + doc OCR (200M+ pairs)</td><td>Apache-2.0</td><td><code>stepfun-ai/GOT-OCR2_0</code></td><td><sup class="cite">[<a href="#ref-97">97</a>]</sup></td></tr>
+<tr><td>Vary-toy</td><td>OCR-VLM</td><td>Qwen-1.8B + new vision vocabulary</td><td>Vary doc/chart corpus</td><td>Apache-2.0</td><td><code>Ucas-HaoranWei/Vary-toy</code></td><td><sup class="cite">[<a href="#ref-98">98</a>]</sup></td></tr>
+<tr><td>Fox</td><td>OCR-VLM</td><td>Focus-anywhere multi-page parser (Vary follow-up)</td><td>Doc + chart synthetic</td><td>Apache-2.0 (paper)</td><td>PENDING-PIN</td><td><sup class="cite">[<a href="#ref-99">99</a>]</sup></td></tr>
+<tr><td>TextMonkey</td><td>OCR-VLM</td><td>Monkey (Qwen-VL-derived) with shifted-window + token resampler</td><td>LAION + DocVQA + synthetic text</td><td>Apache-2.0</td><td><code>echo840/Monkey</code> family</td><td><sup class="cite">[<a href="#ref-100">100</a>]</sup></td></tr>
+<tr><td>mPLUG-DocOwl1.5</td><td>OCR-VLM</td><td>mPLUG-Owl2 + Unified Structure Learning</td><td>DocStruct4M</td><td>Apache-2.0</td><td><code>mPLUG/DocOwl1.5</code></td><td><sup class="cite">[<a href="#ref-101">101</a>]</sup></td></tr>
+<tr><td>DocOwl2</td><td>OCR-VLM</td><td>mPLUG-DocOwl2 (high-res compression)</td><td>DocStruct + DocReason</td><td>Apache-2.0</td><td><code>mPLUG/DocOwl2</code></td><td><sup class="cite">[<a href="#ref-102">102</a>]</sup></td></tr>
+<tr><td>Mathpix</td><td>OCR-proprietary (math)</td><td>Proprietary CNN+Transformer for STEM/equations</td><td>Proprietary</td><td>Commercial / closed</td><td>API <code>v3</code></td><td><sup class="cite">[<a href="#ref-103">103</a>]</sup></td></tr>
+<tr><td>DeepSeek-OCR / DeepSeek-OCR-2</td><td>OCR-VLM</td><td>DeepSeek-VL2 base + OCR head ("contexts optical compression")</td><td>Internal multimodal corpus</td><td>MIT (weights)</td><td><code>deepseek-ai/DeepSeek-OCR</code></td><td><sup class="cite">[<a href="#ref-104">104</a>]</sup></td></tr>
+<tr><td>GLM-OCR</td><td>OCR-VLM</td><td>GLM-4V derived OCR variant</td><td>ZhipuAI internal</td><td>Custom non-commercial-friendly</td><td>PENDING-PIN</td><td><sup class="cite">[<a href="#ref-105">105</a>]</sup></td></tr>
+<tr><td>FireRed-OCR</td><td>OCR-VLM</td><td>Xiaomi FireRedTeam OCR VLM</td><td>Internal (Xiaomi)</td><td>Apache-2.0 (per HF card)</td><td><code>FireRedTeam/FireRedOCR</code> PENDING-PIN</td><td><sup class="cite">[<a href="#ref-106">106</a>]</sup></td></tr>
+<tr><td>Logics-Parsing-v2</td><td>Parse-intent VLM</td><td>Logics layout-aware parser (Qwen2.5-VL backbone reported)</td><td>Internal doc corpus</td><td>PENDING-LICENSE</td><td>v2 PENDING-PIN</td><td><sup class="cite">[<a href="#ref-107">107</a>]</sup></td></tr>
+<tr><td>Chandra (<code>datalab-to/chandra-ocr-2</code>)</td><td>OCR-VLM</td><td>Datalab Chandra-OCR-2 (PaIRS-leading per DOSSIER §2.4)</td><td>Datalab internal</td><td>Commercial / closed weights</td><td>HF <code>datalab-to/chandra-ocr-2</code> (DOSSIER pin)</td><td><sup class="cite">[<a href="#ref-108">108</a>]</sup></td></tr>
+<tr><td>DocIntentOCR-3B</td><td>Parse-intent VLM</td><td>3B doc-intent fine-tune (lineage PENDING)</td><td>PENDING</td><td>PENDING-LICENSE</td><td>PENDING-PIN</td><td><sup class="cite">[<a href="#ref-10">10</a>]</sup></td></tr>
+<tr><td>Qianfan-OCR</td><td>OCR-proprietary</td><td>Baidu Qianfan platform OCR endpoint</td><td>Internal Baidu</td><td>Commercial API</td><td>Qianfan API (PENDING-VERSION)</td><td><sup class="cite">[<a href="#ref-109">109</a>]</sup></td></tr>
+<tr><td>HyperAPI-PaddleOCR-OURS</td><td>OCR-pipeline</td><td>HyperAPI <code>parse</code> primitive over PaddleOCR-v4</td><td>Inherited from PP-OCRv4</td><td>Internal (Apache-2.0 upstream)</td><td><code>hyperapi-sdk</code> PENDING-PIN</td><td><sup class="cite">[<a href="#ref-10">10</a>]</sup></td></tr>
+<tr><td>Qwen2-VL-7B / Qwen2-VL-72B</td><td>VLM</td><td>Qwen2 LLM + ViT encoder (Naive Dynamic Resolution)</td><td>Qwen2-VL multimodal mix</td><td>Apache-2.0 (7B) / Tongyi-Qianwen (72B)</td><td><code>Qwen/Qwen2-VL-{7B,72B}-Instruct</code></td><td><sup class="cite">[<a href="#ref-110">110</a>]</sup></td></tr>
+<tr><td>Qwen2.5-VL-3B / -7B-Instruct</td><td>VLM</td><td>Qwen2.5 LLM + improved ViT (window attn)</td><td>Qwen2.5-VL mix; OCR-heavy stage</td><td>Apache-2.0 (3B/7B)</td><td><code>Qwen/Qwen2.5-VL-{3B,7B}-Instruct</code></td><td><sup class="cite">[<a href="#ref-111">111</a>]</sup></td></tr>
+<tr><td>Qwen3-VL-32B-Instruct / Qwen3-VL-235B</td><td>VLM</td><td>Qwen3 LLM + next-gen visual encoder</td><td>Qwen3-VL mix</td><td>Apache-2.0 (32B); larger sizes Tongyi-Qianwen</td><td><code>Qwen/Qwen3-VL-32B-Instruct</code>, <code>-235B-A22B</code></td><td><sup class="cite">[<a href="#ref-71">71</a>]</sup></td></tr>
+<tr><td>Qwen3.6-A3B / Qwen3.6-35B-A3B</td><td>VLM (MoE)</td><td>Qwen3.6 35B-total / 3B-active MoE VLM</td><td>Qwen3.6 mix</td><td>Apache-2.0 (per card)</td><td><code>Qwen/Qwen3.6-VL-A3B</code> PENDING-EXACT-PIN</td><td><sup class="cite">[<a href="#ref-112">112</a>]</sup></td></tr>
+<tr><td>Qwen3.5-2B-FT</td><td>VLM (fine-tune)</td><td>Hyperbots/in-house FT of Qwen2.5/3.x 2B variant</td><td>Internal</td><td>Internal</td><td>PENDING-PIN</td><td><sup class="cite">[<a href="#ref-10">10</a>]</sup></td></tr>
+<tr><td>InternVL2-8B / -26B / -76B</td><td>VLM</td><td>InternViT-6B + InternLM2 LLM (8B/20B/70B)</td><td>InternVL multimodal SFT mix</td><td>MIT (8B/26B), custom (76B)</td><td><code>OpenGVLab/InternVL2-{8B,26B,Llama3-76B}</code></td><td><sup class="cite">[<a href="#ref-72">72</a>]</sup></td></tr>
+<tr><td>LLaVA-1.6-34B</td><td>VLM</td><td>Nous-Hermes-2-Yi-34B + CLIP-ViT-L</td><td>LLaVA-1.6 SFT mix</td><td>Apache-2.0 (weights), data CC-BY-NC</td><td><code>liuhaotian/llava-v1.6-34b</code></td><td><sup class="cite">[<a href="#ref-113">113</a>]</sup></td></tr>
+<tr><td>Llama-3.2-90B-Vision</td><td>VLM</td><td>Llama-3.1-70B-text + vision adapter, scaled to 90B</td><td>Meta multimodal SFT mix</td><td>Llama 3.2 Community License</td><td><code>meta-llama/Llama-3.2-90B-Vision-Instruct</code></td><td><sup class="cite">[<a href="#ref-114">114</a>]</sup></td></tr>
+<tr><td>GPT-4o</td><td>VLM (closed)</td><td>OpenAI native multimodal</td><td>Proprietary</td><td>Commercial API</td><td><code>gpt-4o-2024-11-20</code> (DOSSIER-pinned PENDING-CONFIRM)</td><td><sup class="cite">[<a href="#ref-115">115</a>]</sup></td></tr>
+<tr><td>GPT-4o-mini</td><td>VLM (closed)</td><td>Smaller GPT-4o sibling</td><td>Proprietary</td><td>Commercial API</td><td><code>gpt-4o-mini-2024-07-18</code></td><td><sup class="cite">[<a href="#ref-116">116</a>]</sup></td></tr>
+<tr><td>GPT-4.1</td><td>VLM (closed)</td><td>Successor to GPT-4o</td><td>Proprietary</td><td>Commercial API (also via Azure OpenAI per [Hyperbots Azure OpenAI routing policy])</td><td><code>gpt-4.1-2025-04-14</code></td><td><sup class="cite">[<a href="#ref-117">117</a>]</sup></td></tr>
+<tr><td>GPT-5 / GPT-5.4 (thinking)</td><td>VLM (closed)</td><td>OpenAI GPT-5 family</td><td>Proprietary</td><td>Commercial API; default OpenAI route per [Hyperbots OpenAI-model preference policy]</td><td><code>gpt-5.4-thinking</code> PENDING-CONFIRM</td><td><sup class="cite">[<a href="#ref-118">118</a>]</sup></td></tr>
+<tr><td>Gemini-1.5-Flash / Pro</td><td>VLM (closed)</td><td>Gemini 1.5 MoE multimodal</td><td>Proprietary</td><td>Commercial API</td><td><code>gemini-1.5-{flash,pro}-002</code></td><td><sup class="cite">[<a href="#ref-119">119</a>]</sup></td></tr>
+<tr><td>Gemini-2.5-Flash / Pro</td><td>VLM (closed)</td><td>Gemini 2.5 family</td><td>Proprietary</td><td>Commercial API</td><td><code>gemini-2.5-{flash,pro}</code> PENDING-DATE</td><td><sup class="cite">[<a href="#ref-120">120</a>]</sup></td></tr>
+<tr><td>Claude-Sonnet-4.6</td><td>VLM (closed)</td><td>Anthropic Claude Sonnet 4.6</td><td>Proprietary</td><td>Commercial API</td><td><code>claude-sonnet-4-6</code> PENDING-CONFIRM</td><td><sup class="cite">[<a href="#ref-121">121</a>]</sup></td></tr>
+<tr><td>Mistral-Large-3-675B</td><td>LLM (closed weights)</td><td>Mistral Large 3, 675B (vision-enabled)</td><td>Proprietary</td><td>Mistral Research / Commercial</td><td><code>mistral-large-3-2026</code> PENDING-CONFIRM</td><td><sup class="cite">[<a href="#ref-122">122</a>]</sup></td></tr>
+</tbody></table>
+
+<h3>A.2. Verified-via-DOSSIER-only; deep-citation PENDING</h3>
+
+<p>The following appear in DOSSIER §2.1/§2.2 but we did not re-verify a canonical model card / paper at table-build time. Treat lineage as <strong>unconfirmed</strong> until a follow-up pass attaches a primary citation:</p>
+
+<ul>
+<li><strong>Qwen3.5-2B-FT</strong>: internal fine-tune; base ambiguous (Qwen2.5-VL-2B vs Qwen3-VL micro).</li>
+<li><strong>GLM-OCR</strong>: multiple ZhipuAI variants exist; need exact HF repo + commit.</li>
+<li><strong>Logics-Parsing-v2</strong>: vendor (Alibaba/Logics) lineage and license PENDING.</li>
+<li><strong>DocIntentOCR-3B</strong>: backbone unidentified.</li>
+<li><strong>Qianfan-OCR</strong>: Baidu API endpoint; underlying model not separately published.</li>
+<li><strong>FireRed-OCR</strong>: Xiaomi card lists Apache-2.0 but training-data disclosure is partial.</li>
+<li><strong>Chandra-OCR-2</strong>: Datalab proprietary; only DOSSIER §2.4 pin available.</li>
+<li><strong>Mistral-Large-3-675B</strong>: parameter count and vision-capability claim sourced from DOSSIER §2.2 only.</li>
+</ul>
+
+<h3>A.3. Patterns</h3>
+
+<p>Three patterns are evident across the 50-row catalogue:</p>
+
+<p>1. <strong>OSS VLM convergence on Qwen2.5 / Qwen3 backbones.</strong> PaddleOCR-VL (ERNIE-based) and DeepSeek-OCR (DeepSeek-VL2) are the main exceptions; nearly every other open OCR-VLM since late 2024 (GOT-OCR-2.0, MinerU2.5-Pro, Logics-Parsing-v2, the Qwen3.6-A3B family itself) builds on Qwen2.5/3 LLM weights with a custom vision encoder or OCR head <sup class="cite">[<a href="#ref-111">111</a>]</sup><sup class="cite">[<a href="#ref-71">71</a>]</sup><sup class="cite">[<a href="#ref-97">97</a>]</sup><sup class="cite">[<a href="#ref-32">32</a>]</sup><sup class="cite">[<a href="#ref-104">104</a>]</sup>.</p>
+<p>2. <strong>Frontier closed models still dominate parse-intent.</strong> On the inhouse <code>parse-intent-inhouse-v1</code> rubric (DOSSIER §2.2), Claude-Sonnet-4.6 / GPT-4.1 / Gemini-2.5-Pro sit in the top tier; the open Qwen3-VL-32B/235B family is the closest open challenger. Exact F1 values are omitted here because the rubric is Hyperbots-internal and not externalized <sup class="cite">[<a href="#ref-10">10</a>]</sup>.</p>
+<p>3. <strong>License heterogeneity constitutes a substantial adoption constraint.</strong> Apache-2.0 dominates the small-model OSS column, but key pipeline tools (Marker/Surya GPL-3.0 dual; MinerU AGPL-3.0; Nougat CC-BY-NC) and the proprietary Tongyi-Qianwen / Llama-3.2-Community / Mistral-Research tiers each impose distinct deployment restrictions. A consolidated leaderboard cell that mixes these without a license column risks misrepresenting deployability.</p>
+
+<h3>Contamination notes</h3>
+
+<p>Several base models are documented (or strongly suspected) to have ingested datasets that are simultaneously used as evaluation corpora elsewhere in the field. These should be flagged whenever a Parse-x cell uses one of those corpora as the gold set:</p>
+
+<ul>
+<li><strong>PubTabNet / PubLayNet contamination risk.</strong> Nougat is trained on arXiv PDFs whose tables overlap PubTabNet's IBM source distribution; GOT-OCR-2.0 and DocOwl1.5/DocOwl2 explicitly list "publicly available document understanding datasets" that the model cards do not enumerate exhaustively, PubTabNet / PubLayNet scores for these models should be regarded as <strong>potentially contaminated</strong> <sup class="cite">[<a href="#ref-96">96</a>]</sup><sup class="cite">[<a href="#ref-97">97</a>]</sup><sup class="cite">[<a href="#ref-101">101</a>]</sup>.</li>
+<li><strong>OmniDocBench / OCRBench leakage risk.</strong> MinerU 2.5, PaddleOCR-VL-1.5, Qwen2.5-VL, and InternVL2 all cite "OCR-heavy multimodal pretraining mixes" that, per the model cards, were assembled before OmniDocBench / OCRBench held-out splits were finalized; deduplication is not independently audited <sup class="cite">[<a href="#ref-95">95</a>]</sup><sup class="cite">[<a href="#ref-32">32</a>]</sup><sup class="cite">[<a href="#ref-111">111</a>]</sup><sup class="cite">[<a href="#ref-72">72</a>]</sup>.</li>
+<li><strong><code>results.zip</code> self-loop.</strong> Per the benchmark-factory guardrail (CLAUDE.md §21, cited in DOSSIER §2.2), HyperAPI deployed output (<code>results.zip</code>) is <strong>never</strong> ground truth; any in-house fine-tune (Qwen3.5-2B-FT, HyperAPI-PaddleOCR-OURS) that was trained against HyperAPI-produced labels must be evaluated only on independently-labeled corpora <sup class="cite">[<a href="#ref-10">10</a>]</sup>.</li>
+<li><strong>Chandra-OCR-2 on PaIRS.</strong> No public training-data card; we cannot rule out PaIRS-relevant table corpora being in-distribution. DOSSIER §2.4 already notes high per-doc variance (0.26–0.9996) which is consistent with a mixed in-/out-of-distribution effect <sup class="cite">[<a href="#ref-10">10</a>]</sup>.</li>
+</ul>
+
+<p>Action item for the next dossier iteration: convert every "PENDING-PIN" / "PENDING-LICENSE" entry above into a verified commit hash + SPDX identifier, and add a contamination-audit column tied to each Parse-x dimension's gold corpus.</p>
+
+<h2>Appendix B. Datasets &amp; Contamination Posture</h2>
+
+<p>This appendix inventories every public and internal corpus that a Parse-x leaderboard cell could draw on, records what is known about its provenance and possible model-training overlap, and pins each to one or more of the framework's nine measurement dimensions (D-OCR, D-PARSE-INTENT, D-LAYOUT, D-BBOX, D-TABLE, D-DOC-QUALITY, D-LANG, D-DOWNSTREAM, D-COST-LATENCY) <sup class="cite">[<a href="#ref-25">25</a>]</sup>. We then state the standing circularity rule on <code>results.zip</code> and close with the per-doc-type coverage-gap matrix.</p>
+
+<p>Contamination posture follows a three-band scheme. <strong>Known-train:</strong> a primary source documents that the corpus appears in a surveyed model's training data. <strong>Plausible-train:</strong> the corpus has been on the public web long enough or in a popular HF mirror such that web-scale VLMs likely saw it, but no training-data card confirms it. <strong>Held-out / internal:</strong> corpus is private, paywalled, or post-dates the cutoff of all surveyed models. Per-claim citations follow.</p>
+
+<h3>B.1. Public datasets</h3>
+
+<table>
+<thead><tr><th>Dataset</th><th>n_docs / n_rules</th><th>License</th><th>Source</th><th>Contamination known?</th><th>Framework dim</th></tr></thead>
+<tbody>
+<tr><td>ParseBench (5 splits: chart, layout, table, text_content, text_formatting)</td><td>~169k rules across 5 splits; n=10/split currently on disk</td><td>Apache-2.0</td><td>upstream <code>hyprbots/parsebench</code>, commit a0b10dd7 <sup class="cite">[<a href="#ref-49">49</a>]</sup></td><td>Plausible-train for any model post-dating its 2024 release; rule files indexed by HF</td><td>D-PARSE-INTENT, D-TABLE, D-LAYOUT, D-OCR (text_content)</td></tr>
+<tr><td>SAVIOR-Bench</td><td>509 docs; IAA 0.761 over 187 double-annotated pairs</td><td>research/non-commercial (per paper)</td><td>SAVIOR-Bench §2.1 <sup class="cite">[<a href="#ref-123">123</a>]</sup></td><td>Held-out at release; some constituent sub-corpora (FUNSD 8.64%, Inv3D 9%) are themselves long-public and almost certainly in VLM pre-training</td><td>D-OCR, D-PARSE-INTENT, D-LAYOUT (via Inv3D share)</td></tr>
+<tr><td>PubTabNet</td><td>568k table images (PubMed Central)</td><td>CDLA-Permissive-2.0</td><td>IBM Research <sup class="cite">[<a href="#ref-45">45</a>]</sup></td><td>Known-train for nearly every table-structure model (Table-Transformer, GTRM-family, PaddleOCR-VL)</td><td>D-TABLE</td></tr>
+<tr><td>FinTabNet</td><td>~113k financial tables (S&amp;P annual reports)</td><td>CDLA-Permissive-2.0</td><td>IBM Research <sup class="cite">[<a href="#ref-46">46</a>]</sup></td><td>Known-train for table-structure VLMs trained on the IBM mix</td><td>D-TABLE</td></tr>
+<tr><td>DocLayNet</td><td>80,863 manually labelled page images, 6 doc classes</td><td>CDLA-Permissive-1.0</td><td>IBM/DS4SD <sup class="cite">[<a href="#ref-27">27</a>]</sup></td><td>Known-train for layout detectors (LayoutLMv3 fine-tunes, DocLayout-YOLO)</td><td>D-LAYOUT, D-BBOX</td></tr>
+<tr><td>PubLayNet</td><td>358k pages from PubMed Central</td><td>CDLA-Permissive-1.0</td><td>IBM Research <sup class="cite">[<a href="#ref-26">26</a>]</sup></td><td>Known-train for most layout backbones</td><td>D-LAYOUT, D-BBOX</td></tr>
+<tr><td>DocVQA</td><td>50k QA pairs / 12,767 images</td><td>non-commercial research</td><td>Mathew et al. <sup class="cite">[<a href="#ref-124">124</a>]</sup></td><td>Known-train for InternVL, Qwen-VL, GPT-4o (publicly stated)</td><td>D-DOWNSTREAM (extractive QA), D-PARSE-INTENT</td></tr>
+<tr><td>OCRBench v2</td><td>10k+ instances / 31 task types / 9 scenarios</td><td>research</td><td>Liu et al. <sup class="cite">[<a href="#ref-125">125</a>]</sup></td><td>Plausible-train; many constituent sub-tasks are public</td><td>D-OCR, D-PARSE-INTENT</td></tr>
+<tr><td>OmniDocBench</td><td>981 PDF pages, 9 doc types, 4 layout types</td><td>Apache-2.0</td><td>OpenDataLab/MinerU team <sup class="cite">[<a href="#ref-4">4</a>]</sup></td><td>Known-train for MinerU-2.5 (acknowledged in MinerU technical report)</td><td>D-LAYOUT, D-TABLE, D-OCR</td></tr>
+<tr><td>olmOCR-Bench / olmOCR-mix</td><td>~7k mixed-source pages</td><td>Apache-2.0</td><td>AllenAI <sup class="cite">[<a href="#ref-126">126</a>]</sup></td><td>Held-out at release; Qwen-2-VL-7B-FT model trained on companion <code>olmOCR-mix-0225</code></td><td>D-OCR</td></tr>
+<tr><td>ChartQA</td><td>9,608 human + 23,111 machine QA over 21k charts</td><td>GPL-3.0</td><td>Masry et al. <sup class="cite">[<a href="#ref-127">127</a>]</sup></td><td>Known-train for chart-capable VLMs</td><td>D-PARSE-INTENT (chart), D-DOWNSTREAM</td></tr>
+<tr><td>FUNSD</td><td>199 forms, ~31k word boxes</td><td>research only</td><td>Jaume et al. <sup class="cite">[<a href="#ref-9">9</a>]</sup></td><td>Known-train, widely used since 2019; appears as 8.64% of SAVIOR-Bench <sup class="cite">[<a href="#ref-123">123</a>]</sup></td><td>D-LAYOUT, D-BBOX</td></tr>
+<tr><td>CORD</td><td>1,000 Indonesian receipts</td><td>CC-BY-4.0</td><td>Park et al. <sup class="cite">[<a href="#ref-13">13</a>]</sup></td><td>Known-train for Donut and most receipt models</td><td>D-OCR, D-PARSE-INTENT</td></tr>
+<tr><td>SROIE (ICDAR'19 task 3)</td><td>973 receipts</td><td>research only</td><td>Huang et al. <sup class="cite">[<a href="#ref-15">15</a>]</sup></td><td>Known-train; in many VLM doc mixtures</td><td>D-OCR, D-BBOX</td></tr>
+</tbody></table>
+
+<p>Notes on apples-to-apples: ParseBench n on disk is 10 docs/split <sup class="cite">[<a href="#ref-10">10</a>]</sup>; the upstream <code>n_rules</code> figure refers to rule cardinality, not document count, and the two should not be conflated when reporting CIs. SAVIOR-Bench attested per-doc score vectors are not on disk, blocking interval claims for the WordRecall reconciliation gate (BLK-18) <sup class="cite">[<a href="#ref-10">10</a>]</sup>.</p>
+
+<h3>B.2. Internal Hyperbots datasets</h3>
+
+<p>Treated as <strong>internal corpus</strong> unless a public attestation exists. Per-row numerics stay inside the factory and are not externalized without consent (per team guardrails).</p>
+
+<ul>
+<li><strong>dataset_95 (<code>dataset_95_granular</code>)</strong>: 95 reviewed invoices/statements; gold has <code>summary</code> + <code>line_items</code> + <code>number_of_line_items</code>; <code>_status: reviewed</code>, <code>_source: subagent_validated</code>. Hold-out status PENDING <sup class="cite">[<a href="#ref-10">10</a>]</sup>. Primary use: D-DOWNSTREAM (extract FieldRecall), D-COST-LATENCY (300s timeout characterization).</li>
+<li><strong>financepss-205</strong>: 205 finance docs; 49 attested rows; per-doc score vectors absent (BLK-3) <sup class="cite">[<a href="#ref-10">10</a>]</sup>. Use: D-DOWNSTREAM.</li>
+<li><strong>Edit-distance OCR corpus</strong> (<code>DC-000__ocr-edit-distance-v1</code>): 31 measured cells; per-corpus n not in attested source. Use: D-OCR.</li>
+<li><strong>Parse-intent in-house rubric</strong> (<code>DC-000__parse-intent-inhouse-v1</code>), 19 cells; rubric provenance vs. <code>results.zip</code> PENDING (Q-DOSS-2), must be cleared before D-PARSE-INTENT publication <sup class="cite">[<a href="#ref-10">10</a>]</sup>.</li>
+<li><strong>SOULSHINE BoL</strong>, 44 docs (soulshine1: 22, soulshine2: 22; soulshine2 byte-identical to bol-grn-test inputs); no gold (uses field-axis proxy). D-DOWNSTREAM-adjacent only.</li>
+<li><strong>tough/bank_statement</strong>, 44 docs; median 12pp, max 51pp (one borderline for the 300s timeout). D-DOWNSTREAM, D-COST-LATENCY.</li>
+<li><strong>tough/cheque</strong>, 21 docs, PNG-only. D-OCR.</li>
+<li><strong>tough/credit_note</strong>, 34 docs, PNG-only. D-DOWNSTREAM.</li>
+<li><strong>tough/remittance</strong>, 75 docs (37 PDF + 38 PNG); closest of any tough split to the n=100 threshold (+25 needed) <sup class="cite">[<a href="#ref-128">128</a>]</sup>. D-DOWNSTREAM.</li>
+</ul>
+
+<p>All internal corpora share one contamination caveat: because Hyperbots' own product is a parse/extract pipeline, the gold in any internal corpus that was bootstrapped from product output is at risk of being circular for HyperAPI cells. Each internal corpus must carry an explicit <code>gold_kind</code> flag, see B.3.</p>
+
+<h3>B.3, Circularity and the <code>results.zip</code> rule</h3>
+
+<p>The framework defines a <code>gold_kind</code> enum <sup class="cite">[<a href="#ref-25">25</a>]</sup> whose <code>"results-zip-derived-NEVER-GOLD"</code> value is the standing prohibition: any artifact derived from <code>results.zip</code>, the HyperAPI deployed-IDP output bundle, is forbidden as ground truth. The rule is restated in three places: the factory's <code>CLAUDE.md</code> ("<code>results.zip</code> is HyperAPI deployed output; NEVER used as ground truth (circular)") <sup class="cite">[<a href="#ref-129">129</a>]</sup>; the framework header ("<code>results.zip</code> IS HyperAPI's deployed-IDP output and is circular for Hyperbots and biased toward Hyperbots' field schema for competitors") <sup class="cite">[<a href="#ref-25">25</a>]</sup>; and the dossier's parse-intent §2.2 (forcing a circular-GT check on the inhouse-v1 rubric) <sup class="cite">[<a href="#ref-10">10</a>]</sup>.</p>
+
+<p>Why it matters: using <code>results.zip</code> as gold would (i) guarantee HyperAPI a near-perfect score against itself, inflating any "best for all finance" claim under H0, and (ii) penalize competitors whose schemas legitimately diverge from Hyperbots'. The sanctioned uses are limited to schema-anchor / drift detection <sup class="cite">[<a href="#ref-25">25</a>]</sup>. Two implications for this review: D-PARSE-INTENT cells using the in-house rubric carry a publishability asterisk until Q-DOSS-2 closes; and the framework's <code>dimension D-DOWNSTREAM</code> baseline of "Qwen 3.6 on raw image" is preferred over "Chandra-as-baseline" precisely to avoid a second circularity (Chandra appears as a parse engine in the panel) <sup class="cite">[<a href="#ref-25">25</a>]</sup>.</p>
+
+<h3>B.4, Per-doc-type coverage gap matrix</h3>
+
+<p>From <code>DOC-TYPE-GAPS.json</code> (2026-05-26) <sup class="cite">[<a href="#ref-128">128</a>]</sup>, counting Tier-1+2+3+4 doc types against the n ≥ 100 minimum: <strong>5 of 6 Tier-1 doc types currently have ZERO factory-measured cells</strong> (T-02 credit note, T-03 PO, T-04 packing slip, T-05 BoL, T-06 remittance; only T-01 invoice has measured cells, with 5 vendors on n=90–95). <strong>Tier-2 has zero measured cells across all four types</strong> (T-07 bank statement, T-08 cheque, T-09 pay stub, T-10 wire/ACH). <strong>Tier-3 has zero measured cells</strong>, and T-11 (10-Q/10-K) is structurally excluded from HyperAPI IDP's current doc-type set [doctypegaps2026, BLK-7]. <strong>Tier-4</strong> (T-14 insurance, T-15 loan) has neither corpus nor measured cells. Of the 16 framework doc types, <strong>14 currently have zero leaderboard cells</strong> and <strong>2</strong> (T-01 invoice and T-16 FUNSD-style forms via SAVIOR aggregation) have any measured presence. Summary for Parse-x: the leaderboard today is a single-doc-type (invoice) result with an OCR-panel aggregate over SAVIOR; cross-doc-type claims are unsupported until D2/D3 phases run.</p>
+
+<h2>Appendix C, Vendor &amp; API Pin Table</h2>
+
+<p>This appendix pins the closed-source / hosted services in the Parse-x panel as of 2026-06-16. Where a vendor has shipped multiple GA snapshots in the past quarter, we list the snapshot our harness will pin; <code>PENDING-CONFIRMATION</code> flags entries where the public docs are ambiguous or where we have not yet executed a sandbox call to confirm the snapshot string.</p>
+
+<table>
+<thead><tr><th>Vendor</th><th>Service</th><th>Current GA model(s)</th><th>API version pin</th><th>Auth</th><th>Pricing</th><th>Region</th><th>Citation</th></tr></thead>
+<tbody>
+<tr><td>Microsoft</td><td>Azure Document Intelligence (fmr. Form Recognizer)</td><td><code>prebuilt-layout</code>, <code>prebuilt-read</code>, <code>prebuilt-document</code>, <code>prebuilt-invoice</code>, custom-neural v4</td><td>REST <code>2024-11-30</code> (GA, v4.0)</td><td>Key (subscription) or Entra ID</td><td>from $1.50 / 1k pages (Read S0); Layout S0 $10 / 1k pages</td><td>30+ Azure regions; not all prebuilts in every region</td><td><sup class="cite">[<a href="#ref-130">130</a>]</sup>, <sup class="cite">[<a href="#ref-131">131</a>]</sup></td></tr>
+<tr><td>Google</td><td>Gemini API (AI Studio / Vertex)</td><td><code>gemini-2.5-pro</code>, <code>gemini-2.5-flash</code>, <code>gemini-2.5-flash-lite</code>; <code>gemini-3.1-pro</code> and <code>gemini-3.5-flash</code> rolling out</td><td><code>gemini-2.5-pro-preview-06-05</code> for Pro panel; 2.5-flash GA snapshot, <code>PENDING-CONFIRMATION</code> for 2.6/3.x in our harness</td><td>API key (AI Studio) / OAuth + ADC (Vertex)</td><td>2.5 Pro $1.25 / $10 per 1M tok (≤200k ctx); 2.5 Flash $0.30 / $2.50 per 1M tok</td><td>global, us-central1, europe-west4, asia-southeast1</td><td><sup class="cite">[<a href="#ref-132">132</a>]</sup>, <sup class="cite">[<a href="#ref-133">133</a>]</sup></td></tr>
+<tr><td>Anthropic</td><td>Claude API</td><td><code>claude-opus-4-8</code> (flagship, rel. 2026-05-28), <code>claude-opus-4-7</code>, <code>claude-sonnet-4-6</code>, <code>claude-haiku-4-5</code></td><td>Pin: <code>claude-sonnet-4-6-20260415</code>, <code>claude-opus-4-8-20260528</code> (PENDING-CONFIRMATION of exact dated snapshot for 4.8); 4.5 family deprecated path; <code>anthropic-version: 2023-06-01</code> header</td><td>API key</td><td>Sonnet 4.6 $3 / $15 per 1M; Opus 4.7/4.8 $5 / $25 per 1M; Haiku 4.5 $1 / $5; batch -50%, cache -90%</td><td>us-east, eu, AWS Bedrock + GCP Vertex mirrors</td><td><sup class="cite">[<a href="#ref-134">134</a>]</sup>, <sup class="cite">[<a href="#ref-135">135</a>]</sup></td></tr>
+<tr><td>OpenAI (via Azure)</td><td>Azure OpenAI Service</td><td><code>gpt-5</code> (2025-08-07), <code>gpt-5.1</code> / <code>gpt-5.1-chat</code> (2025-11-13), <code>gpt-5.2-chat</code> (2026-02-10), <code>gpt-5.4</code> thinking/pro (2026-03-05), <code>gpt-5.4-mini/-nano</code> (2026-03-17), <code>gpt-4.1</code>, <code>gpt-4o</code>, <code>gpt-4o-mini</code>, <code>o3</code> (2025-04-16), <code>o3-mini</code></td><td>Data-plane: <code>api-version=2025-04-01-preview</code> for Responses API; deployment-pinned snapshots above. Older GPT-5/o3 snapshots deprecate 2026-12-11</td><td>Entra ID (preferred) or key</td><td>Mirrors OpenAI list price + Azure markup; GPT-5.4 thinking ~ $5 / $20 per 1M tok (PENDING-CONFIRMATION on Azure-side rate card)</td><td>eastus, eastus2, swedencentral, japaneast, australiaeast (model-dependent)</td><td><sup class="cite">[<a href="#ref-136">136</a>]</sup>, <sup class="cite">[<a href="#ref-137">137</a>]</sup>, <sup class="cite">[<a href="#ref-138">138</a>]</sup></td></tr>
+<tr><td>OpenAI direct</td><td>NOT USED in our harness</td><td>,</td><td>,</td><td>,</td><td>,</td><td>,</td><td>see C.1</td></tr>
+<tr><td>Mistral</td><td>La Plateforme</td><td><code>mistral-large-3</code> (<code>mistral-large-2512</code>), <code>mistral-medium-3</code>, <code>mistral-small-3.2</code></td><td><code>mistral-large-2512</code></td><td>Key</td><td>Large 3: $2 / $6 per 1M tok (one source); $0.50 / $1.50 for <code>large-2512</code> variant, discrepancy, <code>PENDING-CONFIRMATION</code> against vendor card</td><td>EU (Paris), US via AWS Bedrock</td><td><sup class="cite">[<a href="#ref-139">139</a>]</sup>, <sup class="cite">[<a href="#ref-140">140</a>]</sup></td></tr>
+<tr><td>Mathpix</td><td>Convert API (v3)</td><td><code>mathpix-ocr</code> (text+math); <code>pdf</code> endpoint</td><td>REST <code>v3</code></td><td>App-ID + App-Key headers</td><td>$0.004–$0.01 / page (Convert PDF); $0.005 / image equation OCR, <code>PENDING-CONFIRMATION</code> on 2026 rate card</td><td>global (US-hosted)</td><td><sup class="cite">[<a href="#ref-141">141</a>]</sup></td></tr>
+<tr><td>LlamaIndex</td><td>LlamaParse (LlamaCloud)</td><td>modes: <code>fast</code>, <code>balanced</code>, <code>premium</code>, <code>agentic</code></td><td>LlamaCloud API <code>2024-12</code> GA; <code>agentic</code> mode GA Q1 2026</td><td>API key</td><td>Credit system: 1,000 credits = $1; <code>fast</code> 1 cr/pg, <code>premium</code> 15 cr/pg, <code>agentic</code> 45 cr/pg; 10k free credits/mo</td><td>US (AWS us-east-1), EU</td><td><sup class="cite">[<a href="#ref-142">142</a>]</sup>, <sup class="cite">[<a href="#ref-143">143</a>]</sup></td></tr>
+<tr><td>Reducto</td><td>Reducto Parse / Extract</td><td><code>parse</code>, <code>extract</code>, <code>split</code>, <code>edit</code> agentic endpoints</td><td><code>2025-11</code> GA; pin <code>model=parse-v2</code></td><td>API key (bearer)</td><td>Credit system: 1,000 credits = $1; recommended preset ~$0.01–$0.03/pg</td><td>US (SOC2); on-prem option</td><td><sup class="cite">[<a href="#ref-144">144</a>]</sup></td></tr>
+<tr><td>Unstructured.io</td><td>Serverless API / Platform</td><td><code>unstructured-api</code> v0.x; partition strategies <code>hi_res</code>, <code>auto</code>, <code>fast</code>, <code>ocr_only</code>, <code>vlm</code></td><td>API <code>2025-09</code>; pin <code>strategy=hi_res, hi_res_model_name=yolox</code></td><td>API key</td><td>Serverless: $1 / 1k pages (<code>fast</code>), $10 / 1k pages (<code>hi_res</code>); free OSS</td><td>US, EU; OSS = anywhere</td><td><sup class="cite">[<a href="#ref-145">145</a>]</sup>, <sup class="cite">[<a href="#ref-146">146</a>]</sup></td></tr>
+<tr><td>IBM</td><td>Docling</td><td>OSS library (<code>docling</code> PyPI), Docling-Serve container, watsonx.ai-hosted</td><td>Pin: <code>docling==2.x</code> (commit SHA in harness lockfile)</td><td>none (local) / IAM (watsonx)</td><td>OSS = free; watsonx.ai = compute-billed</td><td>self-host; watsonx multi-region</td><td><sup class="cite">[<a href="#ref-147">147</a>]</sup>, <sup class="cite">[<a href="#ref-146">146</a>]</sup></td></tr>
+</tbody></table>
+
+<h3>C.1, Azure OpenAI routing rule</h3>
+
+<p>All OpenAI model calls in Parse-x (<code>gpt-4o</code>, <code>gpt-4o-mini</code>, <code>gpt-4.1</code>, <code>gpt-5</code>, <code>gpt-5.1</code>, <code>gpt-5.2</code>, <code>gpt-5.4</code> family, <code>o3</code>, <code>o3-mini</code>) route through <strong>Azure OpenAI Service</strong>, not the direct <code>api.openai.com</code> endpoint. This is a standing Hyperbots project preference, recorded in user memory <code>azure-openai-preferred</code> and reaffirmed in <code>openai-default-gpt-5-4-thinking</code> (current default = GPT-5.4 thinking mode) <sup class="cite">[<a href="#ref-148">148</a>]</sup>. Operational reasons: (i) Entra-ID auth and tenant-scoped data residency, (ii) committed-throughput PTUs for reproducible latency cells in D-COST-LATENCY, (iii) the Azure data-processing addendum the Hyperbots tenant has signed. Practically this means: model snapshot strings follow Azure's deployment-name convention, the API path is <code>/openai/deployments/{deployment}/responses?api-version=…</code>, and snapshot availability lags OpenAI direct by typically 1–6 weeks <sup class="cite">[<a href="#ref-136">136</a>]</sup>. Benchmark cells that name an OpenAI model implicitly mean "this snapshot, served via Azure", when an OpenAI snapshot is not yet on Azure we mark the cell <code>BLOCKED-AZURE-LAG</code> rather than fall back to direct OpenAI.</p>
+
+<h3>C.2, Known boundaries &amp; caveats</h3>
+
+<ul>
+<li><strong>Azure DI</strong> prebuilt-read covers Latin + CJK printed text but handwritten Chinese / Japanese / Korean fall back to print-trained models with degraded recall; handwritten Arabic is not supported in <code>prebuilt-read</code> GA <sup class="cite">[<a href="#ref-130">130</a>]</sup>. The <code>prebuilt-layout</code> table cell linking does not emit row/column spans for merged headers in all layouts, relevant to D-TABLE.</li>
+<li><strong>Gemini 2.5 / 3.x</strong> vision input is billed as tokens (per Google's tokenizer for images at ~258 tok/tile), so D-COST-LATENCY normalization must convert pages→tokens before cost compares against per-page services. The <code>2.6</code> / <code>3.x</code> line had not stabilized at our cutoff, pin <code>PENDING-CONFIRMATION</code> <sup class="cite">[<a href="#ref-132">132</a>]</sup>.</li>
+<li><strong>Claude Opus/Sonnet</strong> 1M-token context is flat-rate on 4.6/4.7/4.8 (no surcharge), which changes the cost calculus for whole-PDF prompting vs page-tiling <sup class="cite">[<a href="#ref-134">134</a>]</sup>. Sonnet/Opus 4.5 snapshots are still callable but on a deprecation path; we will not pin them.</li>
+<li><strong>GPT-5.4 thinking / pro</strong> exposes reasoning-token billing separate from completion tokens; D-COST-LATENCY must report both. Snapshot deprecation for older GPT-5/o3 lands 2026-12-11, re-pin before then <sup class="cite">[<a href="#ref-137">137</a>]</sup>.</li>
+<li><strong>Mistral Large 3</strong> is multimodal (MoE 41B active / 675B total) but vision-OCR head is newer than the text head; expect higher variance on D-OCR than D-PARSE-INTENT <sup class="cite">[<a href="#ref-139">139</a>]</sup>.</li>
+<li><strong>Mathpix</strong> remains best-in-class for math-equation OCR but does not return layout bounding boxes at the same granularity as Azure DI (affects D-BBOX scoring).</li>
+<li><strong>LlamaParse / Reducto / Unstructured</strong> use credit or per-strategy pricing, to compare apples-to-apples in D-COST-LATENCY we will normalize to "USD per 1k pages on <code>hi_res</code> / <code>premium</code> / <code>parse-v2</code> preset" and disclose the preset in every cell.</li>
+<li><strong>Docling</strong> is OSS; we pin a commit SHA in the harness lockfile so a <code>docling</code> upgrade does not silently change scores between leaderboard refreshes.</li>
+<li>Vendors' published prices are list prices; enterprise / committed-use discounts that may apply to Hyperbots' actual spend are NOT reflected here and MUST NOT be externalized.</li>
+</ul>
+
+<h2>3. Discussion and Open Gates</h2>
+
+<p>Three patterns emerge across the nine dimensions. First, <strong>per-document score vectors are absent everywhere except SAVIOR-Bench's internal pipeline</strong>, OCRBench v2, OmniDocBench, olmOCR-Bench, PubTabNet and DocLayNet all publish single aggregate numbers per model, so any rigorous bootstrap CI95 reporting on top of them requires either re-running the eval (with the attendant compute and decoding-pin honesty work) or explicit attestation. Second, <strong>fine-tune-vs-zero-shot disclosure is inconsistent in the published literature</strong>, a known SAVIOR-Bench complaint (R6) and a recurring source of misleading model-vs-model comparisons (e.g., a 2B fine-tuned model beating a 75B zero-shot model is structurally expected and should not be reported as a model-capability win). Third, <strong>parse-to-downstream lift (D-DOWNSTREAM) is underused in the parse-benchmark literature</strong>: prior art treats OCR / parse as an intrinsic-metric end-state, not as a stage feeding extract / RAG / classify pipelines, and the paired-bootstrap testing infrastructure imported from NLP / ASR <sup class="cite">[<a href="#ref-73">73</a>]</sup> has not been carried over.</p>
+
+<p>The largest open gates blocking first-pass cell publication, in order of severity, are: (i) BLK-18, the SAVIOR-Bench 509-doc out7 corpus is not on disk, blocking WordRecall reconciliation against the attested 31-cell leaderboard; (ii) PENDING-MAXTOKEN, the uniform max_tokens=2048 ceiling truncates Chandra and Qwen on dense text-content / text-formatting splits at 8-10 out of 10 documents, producing 0.0 scores by truncation rather than by model capability; (iii) the model-lineage table (Appendix A) carries several PENDING-PIN entries that block the per-cell <code>pins.adapter_version</code> field from being populated; (iv) several Tier-1 document types in DOC-TYPE-GAPS still have zero measured cells across every framework dimension, a gap that no public benchmark fills.</p>
+
+<p>The framework's measurement discipline does not, by itself, resolve any of these gates; it makes them visible. This visibility constitutes the contribution.</p>
+
+<h2>References</h2>
+
+<p class="ref" id="ref-1"><span class="refnum">[1]</span> Hyperbots. SAVIOR-Bench v1: in-repo deep-read extract (paper/SAVIOR-Bench.md), n=509, IAA 0.761, R1-R10 failure taxonomy. Internal artifact, 2026.</p>
+
+<p class="ref" id="ref-2"><span class="refnum">[2]</span> Hyperbots. SOURCE-EXTRACT Benchmark-VLM_OCR.pdf extract (paper/SOURCE-EXTRACT-Benchmark-VLM-OCR.md), corpus mix, IAA, LoRA recipe. 2026-05-18.</p>
+
+<p class="ref" id="ref-3"><span class="refnum">[3]</span> Fu, L. et al. OCRBench v2: An Improved Benchmark for Evaluating Large Multimodal Models on Visual Text Localization and Reasoning. arXiv:2501.00321 (2025). https://arxiv.org/abs/2501.00321</p>
+
+<p class="ref" id="ref-4"><span class="refnum">[4]</span> Ouyang, L. et al. OmniDocBench: Benchmarking Diverse PDF Document Parsing with Comprehensive Annotations. CVPR 2025 / arXiv:2412.07626 (2024). https://arxiv.org/abs/2412.07626</p>
+
+<p class="ref" id="ref-5"><span class="refnum">[5]</span> MinerU Team. MinerU2.5: A Decoupled Vision-Language Model for Efficient High-Resolution Document Parsing. arXiv:2509.22186 (2025). https://arxiv.org/abs/2509.22186</p>
+
+<p class="ref" id="ref-6"><span class="refnum">[6]</span> Baidu PaddlePaddle Team. PaddleOCR-VL-1.5: Towards a Multi-Task 0.9B VLM for Robust In-the-Wild Document Parsing. ERNIE Blog / arXiv:2601.21957 (2026). https://ernie.baidu.com/blog/posts/paddleocr-vl-1.5/</p>
+
+<p class="ref" id="ref-7"><span class="refnum">[7]</span> Allen Institute for AI. olmOCR-Bench dataset card. Hugging Face, 2025. https://huggingface.co/datasets/allenai/olmOCR-bench</p>
+
+<p class="ref" id="ref-8"><span class="refnum">[8]</span> Poznanski, J. et al. olmOCR 2: Unit Test Rewards for Document OCR. arXiv:2510.19817 (2025). https://arxiv.org/abs/2510.19817</p>
+
+<p class="ref" id="ref-9"><span class="refnum">[9]</span> Jaume, G., Ekenel, H. K., Thiran, J.-P. FUNSD: A Dataset for Form Understanding in Noisy Scanned Documents. ICDAR-OST 2019. https://guillaumejaume.github.io/FUNSD/</p>
+
+<p class="ref" id="ref-10"><span class="refnum">[10]</span> Hyperbots Parse-x research dossier. command-center/DOSSIER.md, §2.1 OCR family inventory (31 cells) and §2.4 PaIRS measurements. Internal, 2026-06-10.</p>
+
+<p class="ref" id="ref-11"><span class="refnum">[11]</span> Hyperbots. PARSE-DEEP-BENCHMARK-FRAMEWORK (2026-05-27). Internal framework spec, /Users/niyati/Desktop/hyperapi-documentapi-benchmark-factory/PARSE-DEEP-BENCHMARK-FRAMEWORK-2026-05-27.md.</p>
+
+<p class="ref" id="ref-12"><span class="refnum">[12]</span> Huang, Y. et al. LayoutLMv3: Pre-training for Document AI with Unified Text and Image Masking. ACM MM (2022). arXiv:2204.08387.</p>
+
+<p class="ref" id="ref-13"><span class="refnum">[13]</span> Park, S. et al. CORD: A Consolidated Receipt Dataset for Post-OCR Parsing. NeurIPS Document Intelligence Workshop (2019). https://github.com/clovaai/cord</p>
+
+<p class="ref" id="ref-14"><span class="refnum">[14]</span> Kim, G. et al. OCR-free Document Understanding Transformer (Donut). ECCV (2022). arXiv:2111.15664.</p>
+
+<p class="ref" id="ref-15"><span class="refnum">[15]</span> Huang, Z. et al. ICDAR2019 Competition on Scanned Receipt OCR and Information Extraction. ICDAR (2019). https://rrc.cvc.uab.es/?ch=13</p>
+
+<p class="ref" id="ref-16"><span class="refnum">[16]</span> Stanislawek, T. et al. Kleister: Key Information Extraction Datasets Involving Long Documents with Complex Layouts. ICDAR (2021). arXiv:2105.05796.</p>
+
+<p class="ref" id="ref-17"><span class="refnum">[17]</span> Simsa, S. et al. DocILE Benchmark for Document Information Localization and Extraction. ICDAR (2023). arXiv:2302.05658. https://docile.rossum.ai/</p>
+
+<p class="ref" id="ref-18"><span class="refnum">[18]</span> ProPublica / Stanford HAI. DeepForm: Political Ad Disclosure Forms dataset. https://github.com/project-deepform/deepform</p>
+
+<p class="ref" id="ref-19"><span class="refnum">[19]</span> Borchmann, L. et al. DUE: End-to-End Document Understanding Benchmark. NeurIPS Datasets &amp; Benchmarks (2021). https://duebenchmark.com/</p>
+
+<p class="ref" id="ref-20"><span class="refnum">[20]</span> Hong, T. et al. BROS: A Pre-trained Language Model Focusing on Text and Layout for Better Key Information Extraction. AAAI (2022). arXiv:2108.04539.</p>
+
+<p class="ref" id="ref-21"><span class="refnum">[21]</span> Wang, J., Jin, L., Ding, K. LiLT: A Simple yet Effective Language-Independent Layout Transformer for Structured Document Understanding. ACL (2022). arXiv:2202.13669.</p>
+
+<p class="ref" id="ref-22"><span class="refnum">[22]</span> Lee, C.-Y. et al. FormNetV2: Multimodal Graph Contrastive Learning for Form Document Information Extraction. ACL (2023). arXiv:2305.02549.</p>
+
+<p class="ref" id="ref-23"><span class="refnum">[23]</span> Wan, J. et al. OmniParser: A Unified Framework for Text Spotting, Key Information Extraction and Table Recognition. CVPR (2024). arXiv:2403.19128.</p>
+
+<p class="ref" id="ref-24"><span class="refnum">[24]</span> Laatiri, S. et al. Information Redundancy and Biases in Public Document Information Extraction Benchmarks. arXiv:2304.14936 (2023).</p>
+
+<p class="ref" id="ref-25"><span class="refnum">[25]</span> Parse Deep Benchmark Framework spec, hyperapi-documentapi-benchmark-factory, 2026-05-27. /Users/niyati/Desktop/hyperapi-documentapi-benchmark-factory/PARSE-DEEP-BENCHMARK-FRAMEWORK-2026-05-27.md</p>
+
+<p class="ref" id="ref-26"><span class="refnum">[26]</span> Zhong, X., Tang, J., Jimeno-Yepes, A. PubLayNet: largest dataset ever for document layout analysis. ICDAR 2019. arXiv:1908.07836. https://arxiv.org/abs/1908.07836</p>
+
+<p class="ref" id="ref-27"><span class="refnum">[27]</span> Pfitzmann, B. et al. DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis. KDD 2022. arXiv:2206.01062. https://arxiv.org/abs/2206.01062</p>
+
+<p class="ref" id="ref-28"><span class="refnum">[28]</span> Cheng, H. et al. M6Doc: A Large-Scale Multi-Format, Multi-Type, Multi-Layout, Multi-Language, Multi-Annotation Category Dataset for Modern Document Layout Analysis. CVPR 2023. https://openaccess.thecvf.com/content/CVPR2023/papers/Cheng_M6Doc_A_Large-Scale_Multi-Format_Multi-Type_Multi-Layout_Multi-Language_Multi-Annotation_Category_Dataset_CVPR_2023_paper.pdf [unverified; URL inaccessible at audit time]</p>
+
+<p class="ref" id="ref-29"><span class="refnum">[29]</span> Wang, Z., Xu, Y., Cui, L., Shang, J., Wei, F. LayoutReader: Pre-training of Text and Layout for Reading Order Detection. EMNLP 2021. arXiv:2108.11591. https://arxiv.org/abs/2108.11591</p>
+
+<p class="ref" id="ref-30"><span class="refnum">[30]</span> Ouyang, L. et al. OmniDocBench: Benchmarking Diverse PDF Document Parsing with Comprehensive Annotations. CVPR 2025. arXiv:2412.07626. https://github.com/opendatalab/OmniDocBench</p>
+
+<p class="ref" id="ref-31"><span class="refnum">[31]</span> Da, C. et al. Vision Grid Transformer for Document Layout Analysis. ICCV 2023. arXiv:2308.14978. https://arxiv.org/abs/2308.14978</p>
+
+<p class="ref" id="ref-32"><span class="refnum">[32]</span> Baidu / PaddlePaddle. PaddleOCR-VL: Boosting Multilingual Document Parsing via a 0.9B Ultra-Compact Vision-Language Model. arXiv:2510.14528 (2025). https://arxiv.org/abs/2510.14528</p>
+
+<p class="ref" id="ref-33"><span class="refnum">[33]</span> FocalOrder: Focal Preference Optimization for Reading Order Detection. arXiv:2601.07483 (2026). https://arxiv.org/abs/2601.07483</p>
+
+<p class="ref" id="ref-34"><span class="refnum">[34]</span> Parse Deep Benchmark Framework v0. HyperAPI DocumentAI Benchmark Factory internal spec (2026-05-27). /Users/niyati/Desktop/hyperapi-documentapi-benchmark-factory/PARSE-DEEP-BENCHMARK-FRAMEWORK-2026-05-27.md</p>
+
+<p class="ref" id="ref-35"><span class="refnum">[35]</span> SAVIOR-Bench: A Provenance-Tagged Benchmark for Financial-Document Parsing, Extraction, Layout Awareness, and Bounding-Box Visual Grounding. Internal paper, §2.2 Facet 3, §5.1.5, §10 R9. /Users/niyati/Desktop/hyperapi-documentapi-benchmark-factory/paper/SAVIOR-Bench.md</p>
+
+<p class="ref" id="ref-36"><span class="refnum">[36]</span> Hertlein, F., Naumann, A., Philipp, P. Inv3D: a high-resolution 3D invoice dataset for template-guided single-image document unwarping. IJDAR 2023. https://felixhertlein.github.io/inv3d/</p>
+
+<p class="ref" id="ref-37"><span class="refnum">[37]</span> ICDAR 2023 Competition on Robust Layout Segmentation in Corporate Documents. arXiv:2305.14962. https://ds4sd.github.io/icdar23-doclaynet/task/</p>
+
+<p class="ref" id="ref-38"><span class="refnum">[38]</span> Bbox-silver pipeline spec, closing R9 partially via PyMuPDF/pdfplumber silver labels (2026-05-26). /Users/niyati/Desktop/hyperapi-parse-x-research/command-center/BBOX-SILVER-PIPELINE-SPEC.md</p>
+
+<p class="ref" id="ref-39"><span class="refnum">[39]</span> Datalab. Chandra OCR 2 model card (datalab-to/chandra-ocr-2). Hugging Face / Datalab blog. https://huggingface.co/datalab-to/chandra-ocr-2 ; https://www.datalab.to/blog/chandra-2</p>
+
+<p class="ref" id="ref-40"><span class="refnum">[40]</span> Datalab. Surya: OCR, layout analysis, reading order, table recognition in 90+ languages. GitHub repo and layout benchmark notes (PubLayNet/DocLayNet, coverage-match scorer). https://github.com/datalab-to/surya</p>
+
+<p class="ref" id="ref-41"><span class="refnum">[41]</span> Lv et al. KOSMOS-2.5: A Multimodal Literate Model. arXiv:2309.11419 (2023). https://arxiv.org/abs/2309.11419</p>
+
+<p class="ref" id="ref-42"><span class="refnum">[42]</span> HyperAPI Parse-X Research Dossier §2 model lists (DocOwl2, Marker, MinerU, Surya, PaddleOCR-VL, Qwen3-VL, GPT-4o, Gemini, etc.). /Users/niyati/Desktop/hyperapi-parse-x-research/command-center/DOSSIER.md</p>
+
+<p class="ref" id="ref-43"><span class="refnum">[43]</span> ParseBench Recreate Plan §1, layout split (16,325 rules, 500 PDFs; bbox + semantic class + reading-order per element). /Users/niyati/Desktop/hyperapi-parse-x-research/command-center/PARSEBENCH-RECREATE-PLAN-2026-05-26.md</p>
+
+<p class="ref" id="ref-44"><span class="refnum">[44]</span> Hyperbots benchmark-factory. TABULAR-LITERATURE-SURVEY v2 (2026). plan/TABULAR-LITERATURE-SURVEY.md, TSR lineage, metric formal definitions, corpora and SOTA framing.</p>
+
+<p class="ref" id="ref-45"><span class="refnum">[45]</span> Zhong, X., ShafieiBavani, E., Jimeno-Yepes, A. Image-based Table Recognition: Data, Model, and Evaluation (PubTabNet + EDD + TEDS). ECCV 2020. https://github.com/ibm-aur-nlp/PubTabNet.</p>
+
+<p class="ref" id="ref-46"><span class="refnum">[46]</span> Zheng, X., Burdick, D., Popa, L., Zhong, X., Wang, N. Global Table Extractor (GTE) and the FinTabNet dataset of S&amp;P 500 annual-report tables. WACV 2021. https://developer.ibm.com/exchanges/data/all/fintabnet/; arXiv:2005.00589.</p>
+
+<p class="ref" id="ref-47"><span class="refnum">[47]</span> Smock, B., Pesala, R., Abraham, R. GriTS: Grid Table Similarity Metric for Table Structure Recognition. ICDAR 2023; arXiv:2203.12555. https://arxiv.org/abs/2203.12555.</p>
+
+<p class="ref" id="ref-48"><span class="refnum">[48]</span> Reducto. Announcing RD-TableBench: An Open-Source Table Benchmark (2024). https://reducto.ai/blog/rd-tablebench.</p>
+
+<p class="ref" id="ref-49"><span class="refnum">[49]</span> LlamaIndex / community. ParseBench: A Document Parsing Benchmark for AI Agents (2026). arXiv:2604.08538; https://github.com/run-llama/ParseBench; https://huggingface.co/datasets/llamaindex/ParseBench. Defines GTRM = mean(GriTS, TableRecordMatch), table split n=503 across 284 docs.</p>
+
+<p class="ref" id="ref-50"><span class="refnum">[50]</span> Smock, B., Pesala, R., Abraham, R. PubTables-1M: Towards Comprehensive Table Extraction from Unstructured Documents. CVPR 2022, pp. 4634–4642. https://github.com/microsoft/table-transformer.</p>
+
+<p class="ref" id="ref-51"><span class="refnum">[51]</span> Parse-x team. Parse Deep Benchmark Framework v0 (PARSE-DEEP-BENCHMARK-FRAMEWORK-2026-05-27), §D-DOC-QUALITY lines 122-130. Hyperbots internal (2026). file:///Users/niyati/Desktop/hyperapi-documentapi-benchmark-factory/PARSE-DEEP-BENCHMARK-FRAMEWORK-2026-05-27.md</p>
+
+<p class="ref" id="ref-52"><span class="refnum">[52]</span> SAVIOR-Bench authors. SAVIOR-Bench: Stratified Annotated Visual Information OCR / Recognition Benchmark (v1). Project paper, §2.1 corpus mix, §10 recommendations R3/R4 (2025). file:///Users/niyati/Desktop/hyperapi-documentapi-benchmark-factory/paper/SAVIOR-Bench.md</p>
+
+<p class="ref" id="ref-53"><span class="refnum">[53]</span> Authors of DocIQ. DocIQ: A Benchmark Dataset and Feature Fusion Network for Document Image Quality Assessment. arXiv:2509.17012 (2025). https://arxiv.org/pdf/2509.17012</p>
+
+<p class="ref" id="ref-54"><span class="refnum">[54]</span> Ma, K. et al. DocUNet: Document Image Unwarping via a Stacked U-Net. CVPR 2018. https://www.researchgate.net/publication/329747239 [unverified; URL inaccessible at audit time]</p>
+
+<p class="ref" id="ref-55"><span class="refnum">[55]</span> Harley, A. W., Ufkes, A., Derpanis, K. G. Evaluation of Deep Convolutional Nets for Document Image Classification and Retrieval (RVL-CDIP, 400k images at ~100 DPI). ICDAR 2015. https://www.cs.cmu.edu/~aharley/rvl-cdip/ [unverified; URL inaccessible at audit time]</p>
+
+<p class="ref" id="ref-56"><span class="refnum">[56]</span> Larson, S. et al. On Evaluation of Document Classification using RVL-CDIP (label noise audit, 8.1% mean, 1.6-16.9% per class). arXiv:2306.12550 (2023). https://arxiv.org/abs/2306.12550</p>
+
+<p class="ref" id="ref-57"><span class="refnum">[57]</span> Papadopoulos, C., Pletschacher, S., Clausner, C., Antonacopoulos, A. The IMPACT Dataset of Historical Document Images. HIP'13, ACM, pp. 123-130 (2013). https://www.primaresearch.org/datasets</p>
+
+<p class="ref" id="ref-58"><span class="refnum">[58]</span> Groleau, A. et al. Augraphy: A Data Augmentation Library for Document Images. arXiv:2208.14558 (2022). https://arxiv.org/pdf/2208.14558</p>
+
+<p class="ref" id="ref-59"><span class="refnum">[59]</span> Hyperbots Parse-x team. SOULSHINE-PLAN-2026-05-25 (BoL / receiving-log corpus, soulshine1 + soulshine2). Hyperbots internal (2026). file:///Users/niyati/Desktop/hyperapi-documentapi-benchmark-factory/SOULSHINE-PLAN-2026-05-25.md</p>
+
+<p class="ref" id="ref-60"><span class="refnum">[60]</span> Li, H. et al. Towards Document Image Quality Assessment: A Text Line Based Framework and a Synthetic Text Line Image Dataset. arXiv:1906.01907 (2019). https://arxiv.org/pdf/1906.01907</p>
+
+<p class="ref" id="ref-61"><span class="refnum">[61]</span> Anonymous. Analysing the Robustness of Vision-Language-Models to Common Corruptions (blur, JPEG, noise severity sweep). arXiv:2504.13690 (2025). https://arxiv.org/html/2504.13690v1</p>
+
+<p class="ref" id="ref-62"><span class="refnum">[62]</span> Anonymous. DocRobust: Enhancing Robustness of Multi-modal Document Understanding to Corruptions. OpenReview (2024). https://openreview.net/pdf/7d215ea6ae5d1e2423e86cbb61cb44377179dee8.pdf [unverified; URL inaccessible at audit time]</p>
+
+<p class="ref" id="ref-63"><span class="refnum">[63]</span> Tang et al. MTVQA: Benchmarking Multilingual Text-Centric Visual Question Answering. arXiv:2405.11985 (2024); ACL Findings 2025. https://arxiv.org/abs/2405.11985</p>
+
+<p class="ref" id="ref-64"><span class="refnum">[64]</span> Xu, Y., Lv, T., Cui, L., Wang, G., Lu, Y., Florencio, D., Zhang, C., Wei, F. XFUND / LayoutXLM: Multimodal Pre-training for Multilingual Visually-rich Document Understanding. Findings of ACL 2022, pp. 3214-3224.</p>
+
+<p class="ref" id="ref-65"><span class="refnum">[65]</span> MDPBench: Multilingual Digital and Photographed Document Parsing benchmark (17 languages, 3,400 images). Referenced via OCRBench v2 ecosystem, 2025. [PENDING-VERIFICATION; URL/ID not found]</p>
+
+<p class="ref" id="ref-66"><span class="refnum">[66]</span> Cho et al. M3DocRAG: Multi-modal Retrieval is What You Need for Multi-page Multi-document Understanding. arXiv:2411.04952 (2024); ICCV 2025 Workshop. https://arxiv.org/abs/2411.04952</p>
+
+<p class="ref" id="ref-67"><span class="refnum">[67]</span> Zhao, M., Li, B., Wang, J., Li, W., Zhou, W., Zhang, L., Xuyang, S., Yu, Z., Yu, X., Li, G., Dai, A., Zhou, S. Towards Video Text Visual Question Answering: Benchmark and Baseline. NeurIPS 2022 Datasets and Benchmarks Track.</p>
+
+<p class="ref" id="ref-68"><span class="refnum">[68]</span> Zhu, Xie et al. SCUT-EPT: New Dataset and Benchmark for Offline Chinese Text Recognition in Examination Paper. IEEE Access, 2018. https://github.com/HCIILAB/SCUT-EPT_Dataset_Release</p>
+
+<p class="ref" id="ref-69"><span class="refnum">[69]</span> He et al. ICPR 2018 MTWI Challenge on Multi-Type Web Image Text Reading. 2018. [unverified; URL inaccessible at audit time]</p>
+
+<p class="ref" id="ref-70"><span class="refnum">[70]</span> PaddleOCR (PP-OCRv4/v5/v6) and PaddleOCR-VL (v1.6) model cards, PaddlePaddle, 2024-2026. https://github.com/PaddlePaddle/PaddleOCR</p>
+
+<p class="ref" id="ref-71"><span class="refnum">[71]</span> Alibaba. Qwen2-VL and Qwen3-VL technical reports and model cards, 2024-2025. [unverified; URL inaccessible at audit time]</p>
+
+<p class="ref" id="ref-72"><span class="refnum">[72]</span> Chen et al. InternVL2 technical report and Hugging Face model cards, 2024. [unverified; URL inaccessible at audit time]</p>
+
+<p class="ref" id="ref-73"><span class="refnum">[73]</span> Philipp Koehn. Statistical Significance Tests for Machine Translation Evaluation. EMNLP 2004, Barcelona, pp. 388-395. https://aclanthology.org/W04-3250/</p>
+
+<p class="ref" id="ref-74"><span class="refnum">[74]</span> Park, S. et al. CORD: A Consolidated Receipt Dataset for Post-OCR Parsing. NeurIPS 2019 Document Intelligence Workshop. https://github.com/clovaai/cord</p>
+
+<p class="ref" id="ref-75"><span class="refnum">[75]</span> Huang, Z. et al. ICDAR2019 Competition on Scanned Receipt OCR and Information Extraction (SROIE). ICDAR 2019. https://rrc.cvc.uab.es/?ch=13 [unverified; URL inaccessible at audit time]</p>
+
+<p class="ref" id="ref-76"><span class="refnum">[76]</span> Huang, Y. et al. LayoutLMv3: Pre-training for Document AI with Unified Text and Image Masking. ACM MM 2022. arXiv:2204.08387.</p>
+
+<p class="ref" id="ref-77"><span class="refnum">[77]</span> Jaume, G., Ekenel, H. K., Thiran, J.-P. FUNSD: A Dataset for Form Understanding in Noisy Scanned Documents. ICDAR-OST 2019. arXiv:1905.13538.</p>
+
+<p class="ref" id="ref-78"><span class="refnum">[78]</span> Mathew, M., Karatzas, D., Jawahar, C. V. DocVQA: A Dataset for VQA on Document Images. WACV 2021. arXiv:2007.00398.</p>
+
+<p class="ref" id="ref-79"><span class="refnum">[79]</span> LandingAI. DocVQA Benchmark: 99.16% Accuracy Using Agentic Document Extraction (2025). https://landing.ai/blog/superhuman-on-docvqa-without-images-in-qa-agentic-document-extraction</p>
+
+<p class="ref" id="ref-80"><span class="refnum">[80]</span> van Strien, D., Beelen, K., Ardanuy, M. C., Hosseini, K., McGillivray, B., Colavizza, G. Assessing the Impact of OCR Quality on Downstream NLP Tasks. ARTIDIGH 2020. https://www.turing.ac.uk/news/publications/assessing-impact-ocr-quality-downstream-nlp-tasks [unverified; URL inaccessible at audit time]</p>
+
+<p class="ref" id="ref-81"><span class="refnum">[81]</span> Chiron, G. et al. Evaluating and mitigating the impact of OCR errors on information retrieval. Int. J. Digital Libraries (2023). https://link.springer.com/article/10.1007/s00799-023-00345-6 [unverified; URL inaccessible at audit time]</p>
+
+<p class="ref" id="ref-82"><span class="refnum">[82]</span> Stanford CRFM. Efficient-HELM: ranking-preserving fractional runs. https://crfm-helm.readthedocs.io/en/latest/get_helm_rank/ [PENDING-VERIFICATION; URL/ID not found]</p>
+
+<p class="ref" id="ref-83"><span class="refnum">[83]</span> Stanford CRFM. HELM Documentation (accessed 2026-06). https://crfm-helm.readthedocs.io/</p>
+
+<p class="ref" id="ref-84"><span class="refnum">[84]</span> Artificial Analysis. AI Model Leaderboard, intelligence, speed, latency, price, context (2026). https://artificialanalysis.ai/</p>
+
+<p class="ref" id="ref-85"><span class="refnum">[85]</span> VERTU Editorial. AI Model Leaderboard 2026: Intelligence, Speed, Price &amp; Context. https://vertu.com/lifestyle/ai-model-leaderboard-2026-intelligence-speed-price-context-a-complete-ranking-guide</p>
+
+<p class="ref" id="ref-86"><span class="refnum">[86]</span> byteiota. Mistral OCR 3: $2/1000 Pages Cuts Document AI Costs 97% (2025). https://byteiota.com/mistral-ocr-3-2-1000-pages-cuts-document-ai-costs-97/</p>
+
+<p class="ref" id="ref-87"><span class="refnum">[87]</span> aiproductivity.ai. Document AI Cost Comparison 2026: Mistral vs AWS Textract vs Google Document AI. https://aiproductivity.ai/blog/document-ai-cost-comparison/</p>
+
+<p class="ref" id="ref-88"><span class="refnum">[88]</span> ofox.ai. Best LLM for OCR 2026: 7 Models Ranked, GLM-OCR Wins 94.62. https://ofox.ai/blog/best-ai-model-for-ocr-2026/</p>
+
+<p class="ref" id="ref-89"><span class="refnum">[89]</span> Smith, R. et al. Tesseract OCR engine, v5.x. https://github.com/tesseract-ocr/tesseract (accessed 2026-06).</p>
+
+<p class="ref" id="ref-90"><span class="refnum">[90]</span> JaidedAI. EasyOCR. https://github.com/JaidedAI/EasyOCR (accessed 2026-06).</p>
+
+<p class="ref" id="ref-91"><span class="refnum">[91]</span> Topdu et al. OpenOCR. https://github.com/Topdu/OpenOCR (accessed 2026-06).</p>
+
+<p class="ref" id="ref-92"><span class="refnum">[92]</span> Paruchuri, V. Surya: multilingual document OCR toolkit. https://github.com/datalab-to/surya (2024).</p>
+
+<p class="ref" id="ref-93"><span class="refnum">[93]</span> Paruchuri, V. Marker: PDF to markdown. https://github.com/datalab-to/marker (2024).</p>
+
+<p class="ref" id="ref-94"><span class="refnum">[94]</span> OpenDataLab. MinerU v0.9 release. https://github.com/opendatalab/MinerU (2024).</p>
+
+<p class="ref" id="ref-95"><span class="refnum">[95]</span> OpenDataLab. MinerU 2.5 technical report and model cards. https://huggingface.co/opendatalab (2025).</p>
+
+<p class="ref" id="ref-96"><span class="refnum">[96]</span> Blecher, L. et al. Nougat: Neural Optical Understanding for Academic Documents. arXiv:2308.13418 (2023).</p>
+
+<p class="ref" id="ref-97"><span class="refnum">[97]</span> Wei, H. et al. General OCR Theory: Towards OCR-2.0 via a Unified End-to-end Model. arXiv:2409.01704 (2024).</p>
+
+<p class="ref" id="ref-98"><span class="refnum">[98]</span> Wei, H. et al. Vary: Scaling up the Vision Vocabulary for Large Vision-Language Models. arXiv:2312.06109 (2023).</p>
+
+<p class="ref" id="ref-99"><span class="refnum">[99]</span> Liu, C. et al. Fox: Focus Anywhere for Fine-grained Multi-page Document Understanding. arXiv:2405.14295 (2024).</p>
+
+<p class="ref" id="ref-100"><span class="refnum">[100]</span> Liu, Y. et al. TextMonkey: An OCR-Free Large Multimodal Model for Understanding Document. arXiv:2403.04473 (2024).</p>
+
+<p class="ref" id="ref-101"><span class="refnum">[101]</span> Hu, A. et al. mPLUG-DocOwl 1.5: Unified Structure Learning for OCR-free Document Understanding. arXiv:2403.12895 (2024).</p>
+
+<p class="ref" id="ref-102"><span class="refnum">[102]</span> Hu, A. et al. mPLUG-DocOwl2: High-resolution Compressing for OCR-free Multi-page Document Understanding. arXiv:2409.03420 (2024).</p>
+
+<p class="ref" id="ref-103"><span class="refnum">[103]</span> Mathpix Inc. Mathpix OCR API v3 documentation. https://docs.mathpix.com (accessed 2026-06).</p>
+
+<p class="ref" id="ref-104"><span class="refnum">[104]</span> DeepSeek-AI. DeepSeek-OCR: Contexts Optical Compression. HF https://huggingface.co/deepseek-ai/DeepSeek-OCR (2025).</p>
+
+<p class="ref" id="ref-105"><span class="refnum">[105]</span> Zhipu AI / THUDM. GLM-4V / GLM-OCR family. https://github.com/THUDM (accessed 2026-06). [unverified; URL inaccessible at audit time]</p>
+
+<p class="ref" id="ref-106"><span class="refnum">[106]</span> Xiaomi FireRedTeam. FireRed-OCR model card. https://huggingface.co/FireRedTeam (2025).</p>
+
+<p class="ref" id="ref-107"><span class="refnum">[107]</span> Alibaba Logics team. Logics-Parsing technical note (vendor blog, 2025). PENDING canonical URL.</p>
+
+<p class="ref" id="ref-108"><span class="refnum">[108]</span> Datalab. Chandra-OCR-2 model card. https://huggingface.co/datalab-to/chandra-ocr-2 (2026).</p>
+
+<p class="ref" id="ref-109"><span class="refnum">[109]</span> Baidu Qianfan platform. OCR API reference. https://cloud.baidu.com/product/qianfan (accessed 2026-06). [unverified; URL inaccessible at audit time]</p>
+
+<p class="ref" id="ref-110"><span class="refnum">[110]</span> Wang, P. et al. Qwen2-VL: Enhancing Vision-Language Model's Perception of the World at Any Resolution. arXiv:2409.12191 (2024).</p>
+
+<p class="ref" id="ref-111"><span class="refnum">[111]</span> Qwen Team. Qwen2.5-VL Technical Report. arXiv:2502.13923 (2025).</p>
+
+<p class="ref" id="ref-112"><span class="refnum">[112]</span> Qwen Team. Qwen3.6-VL-A3B (MoE) model card. https://huggingface.co/Qwen (2026). [PENDING-VERIFICATION; URL/ID not found]</p>
+
+<p class="ref" id="ref-113"><span class="refnum">[113]</span> Liu, H. et al. LLaVA-1.6 (LLaVA-NeXT). https://llava-vl.github.io/blog/2024-01-30-llava-next/ (2024).</p>
+
+<p class="ref" id="ref-114"><span class="refnum">[114]</span> Meta AI. Llama 3.2 multimodal model card. https://huggingface.co/meta-llama/Llama-3.2-90B-Vision-Instruct (2024).</p>
+
+<p class="ref" id="ref-115"><span class="refnum">[115]</span> OpenAI. GPT-4o system card. https://openai.com/index/hello-gpt-4o/ (2024). [unverified; URL inaccessible at audit time]</p>
+
+<p class="ref" id="ref-116"><span class="refnum">[116]</span> OpenAI. GPT-4o mini announcement. https://openai.com/index/gpt-4o-mini-advancing-cost-efficient-intelligence/ (2024). [unverified; URL inaccessible at audit time]</p>
+
+<p class="ref" id="ref-117"><span class="refnum">[117]</span> OpenAI. GPT-4.1 model release notes. https://platform.openai.com/docs/models/gpt-4.1 (2025).</p>
+
+<p class="ref" id="ref-118"><span class="refnum">[118]</span> OpenAI. GPT-5 / GPT-5.4 reasoning model documentation. https://platform.openai.com/docs/models (2025–2026).</p>
+
+<p class="ref" id="ref-119"><span class="refnum">[119]</span> Google DeepMind. Gemini 1.5 Technical Report. arXiv:2403.05530 (2024).</p>
+
+<p class="ref" id="ref-120"><span class="refnum">[120]</span> Google DeepMind. Gemini 2.5 model family. https://deepmind.google/technologies/gemini/ (2025).</p>
+
+<p class="ref" id="ref-121"><span class="refnum">[121]</span> Anthropic. Claude Sonnet 4.6 model card. https://www.anthropic.com/claude (2026).</p>
+
+<p class="ref" id="ref-122"><span class="refnum">[122]</span> Mistral AI. News page (Mistral Large 3 announcement not found at this URL; latest listed models are Mistral Medium 3.5 (2026-05-22), Mistral 3 (2025-12-02), Mistral Small 3.1 (2025-03-17)). https://mistral.ai/news/</p>
+
+<p class="ref" id="ref-123"><span class="refnum">[123]</span> SAVIOR-Bench authors. SAVIOR-Bench: 509-document attested OCR + parse benchmark, §2.1 (composition and IAA 0.761). Paper notes at /Users/niyati/Desktop/hyperapi-documentapi-benchmark-factory/paper/SAVIOR-Bench.md.</p>
+
+<p class="ref" id="ref-124"><span class="refnum">[124]</span> Mathew, M., Karatzas, D., Jawahar, C.V. DocVQA: A Dataset for VQA on Document Images. WACV 2021. https://www.docvqa.org/</p>
+
+<p class="ref" id="ref-125"><span class="refnum">[125]</span> Fu, L., Kuang, Z., Song, J., et al. OCRBench v2: An Improved Benchmark for Evaluating Large Multimodal Models on Visual Text Localization and Reasoning. arXiv:2501.00321 (2024).</p>
+
+<p class="ref" id="ref-126"><span class="refnum">[126]</span> Poznanski, J. et al. olmOCR: Unlocking Trillions of Tokens in PDFs with Vision Language Models. AllenAI (2025). https://olmocr.allenai.org/</p>
+
+<p class="ref" id="ref-127"><span class="refnum">[127]</span> Masry, A. et al. ChartQA: A Benchmark for Question Answering about Charts with Visual and Logical Reasoning. ACL Findings 2022. https://github.com/vis-nlp/ChartQA</p>
+
+<p class="ref" id="ref-128"><span class="refnum">[128]</span> Hyperbots parse-x-research team. DOC-TYPE-GAPS.json (16 doc types, 2026-05-26 snapshot). /Users/niyati/Desktop/hyperapi-parse-x-research/command-center/DOC-TYPE-GAPS.json.</p>
+
+<p class="ref" id="ref-129"><span class="refnum">[129]</span> Hyperbots benchmark-factory. CLAUDE.md team mandate (line 17). /Users/niyati/Desktop/hyperapi-documentapi-benchmark-factory/CLAUDE.md (2026).</p>
+
+<p class="ref" id="ref-130"><span class="refnum">[130]</span> Microsoft. What's new in Azure AI Document Intelligence (v4.0 GA, REST 2024-11-30). Microsoft Learn (2024–2026). https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/whats-new?view=doc-intel-4.0.0</p>
+
+<p class="ref" id="ref-131"><span class="refnum">[131]</span> Microsoft Azure. Document Intelligence pricing. Azure (2026). https://azure.microsoft.com/en-in/pricing/details/document-intelligence/ [unverified; URL inaccessible at audit time]</p>
+
+<p class="ref" id="ref-132"><span class="refnum">[132]</span> Google. Gemini API pricing (2.5 Pro / 2.5 Flash). costgoat / pricepertoken aggregators (2026). https://pricepertoken.com/pricing-page/model/google-gemini-2.5-pro</p>
+
+<p class="ref" id="ref-133"><span class="refnum">[133]</span> MetaCTO. The true cost of Google Gemini: API pricing guide (May 2026). https://www.metacto.com/blogs/the-true-cost-of-google-gemini-a-guide-to-api-pricing-and-integration</p>
+
+<p class="ref" id="ref-134"><span class="refnum">[134]</span> MetaCTO. Claude API Pricing 2026: Opus 4.8, Sonnet 4.6, Haiku 4.5. (2026). https://www.metacto.com/blogs/anthropic-api-pricing-a-full-breakdown-of-costs-and-integration</p>
+
+<p class="ref" id="ref-135"><span class="refnum">[135]</span> CloudZero. Anthropic Claude API Pricing in 2026. (2026). https://www.cloudzero.com/blog/claude-api-pricing/</p>
+
+<p class="ref" id="ref-136"><span class="refnum">[136]</span> Microsoft. What's new in Azure OpenAI in Microsoft Foundry Models (classic). Microsoft Learn. Confirmed: o3 released April 2025; gpt-5 series released August 2025. Specific snapshots (gpt-5 2025-08-07, gpt-5.1 2025-11-13, gpt-5.2-chat 2026-02-10) not visible on the page.</p>
+
+<p class="ref" id="ref-137"><span class="refnum">[137]</span> OpenAI. API Deprecations notice, older GPT-5 / o3 snapshots removed 2026-12-11. developers.openai.com (2026). https://developers.openai.com/api/docs/deprecations</p>
+
+<p class="ref" id="ref-138"><span class="refnum">[138]</span> Wikipedia. GPT-5.4 (released 2026-03-05; mini/nano 2026-03-17). https://en.wikipedia.org/wiki/GPT-5.4</p>
+
+<p class="ref" id="ref-139"><span class="refnum">[139]</span> llm-stats. Mistral Large 3 (mistral-large-2509 / 2512), benchmarks, pricing, context. (2026). https://llm-stats.com/models/mistral-large-3-2509</p>
+
+<p class="ref" id="ref-140"><span class="refnum">[140]</span> TokenMix. Mistral API Pricing 2026: Large 3 output $6/M. (2026). https://tokenmix.ai/blog/mistral-api-pricing</p>
+
+<p class="ref" id="ref-141"><span class="refnum">[141]</span> Mathpix. Convert API pricing and reviews. G2 (2026). https://www.g2.com/products/mathpix/reviews</p>
+
+<p class="ref" id="ref-142"><span class="refnum">[142]</span> LlamaIndex. LlamaParse pricing, credit system (1,000 credits = $1; 10k free/mo). LlamaCloud docs (2025–2026).</p>
+
+<p class="ref" id="ref-143"><span class="refnum">[143]</span> Vstorm. Top 10 document parsing services for RAG pipelines and LLM applications 2026. https://vstorm.co/llamaindex/top-10-document-parsing-services-for-rag-pipelines-and-llm-applications/</p>
+
+<p class="ref" id="ref-144"><span class="refnum">[144]</span> Reducto. The complete agentic document platform, parser comparison. (2026). https://llms.reducto.ai/document-parser-comparison</p>
+
+<p class="ref" id="ref-145"><span class="refnum">[145]</span> Unstructured.io. Serverless API pricing (hi_res vs fast strategies). unstructured.io (2026).</p>
+
+<p class="ref" id="ref-146"><span class="refnum">[146]</span> Firecrawl. Best PDF Parsers for AI and RAG Workflows in 2026 (Docling, Unstructured, Reducto, LlamaParse comparison). https://www.firecrawl.dev/blog/best-pdf-parsers</p>
+
+<p class="ref" id="ref-147"><span class="refnum">[147]</span> IBM Research. Docling, open-source document conversion toolkit. GitHub (2024–2026). https://github.com/DS4SD/docling</p>
+
+<p class="ref" id="ref-148"><span class="refnum">[148]</span> Hyperbots internal user-memory preferences: azure-openai-preferred; openai-default-gpt-5-4-thinking. (2026).</p>
+
+<p class="ref" id="ref-149"><span class="refnum">[149]</span> Liang, P., Bommasani, R., Lee, T., et al. Holistic Evaluation of Language Models. arXiv:2211.09110 (2022). https://crfm.stanford.edu/helm/</p>
+
+<p class="ref" id="ref-150"><span class="refnum">[150]</span> MLCommons. MLPerf Inference 5.1: Benchmarking Small LLMs with Llama3.1-8B (2025). https://mlcommons.org/2025/09/small-llm-inference-5-1/</p>
+
+<p class="ref" id="ref-151"><span class="refnum">[151]</span> Lambda. MLPerf Inference v6.0: hardware leap, software maturity (2026). https://lambda.ai/blog/lambdas-mlperf-inference-v6.0-hardware-leap-software-maturity-research-breakthrough</p>
+
+<p class="ref" id="ref-152"><span class="refnum">[152]</span> BentoML. Key metrics for LLM inference. LLM Inference Handbook (accessed 2026-06). https://bentoml.com/llm/llm-inference-basics/llm-inference-metrics</p>
+
+<p class="ref" id="ref-153"><span class="refnum">[153]</span> GMI Cloud. Independent Speed Data for 2026: LLM Inference Speed Benchmarks on TTFT, Throughput, and Cost. https://www.gmicloud.ai/en/blog/llm-inference-speed-benchmark-2026</p>
+
+<p class="ref" id="ref-154"><span class="refnum">[154]</span> Parsli. The Real Cost of Using LLMs for OCR (And the Architecture That Cut It by 60x) (2025). https://parsli.co/blog/real-cost-llm-ocr-document-extraction</p>
+
+</body>
+</html>
