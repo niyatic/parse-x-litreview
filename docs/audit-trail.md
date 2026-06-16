@@ -305,3 +305,72 @@ The senior critique is preserved here verbatim as the externalization-readiness 
 - This audit trail (v2 + v3 + v4 sections): `LIT-REVIEW-2026-06-16-REVIEW.md`
 - Cite-verify salvage: `/tmp/litreview-v4/salvaged.json`
 - Senior critique JSON: `/tmp/litreview-v4/critique.json`
+
+---
+
+## 8. v5 — Senior-academic critique applied (2026-06-16)
+
+The senior critique findings (REVIEW.md §7.2, verdict REWORK) were applied to v4 → v5. The original delegated agent died on a socket disconnect (4 min, 7 tool uses, 0 tokens recovered); the edits were authored directly in the main loop after anchor-greping v4.
+
+### 8.1 Edits applied (10/10)
+
+| # | Anchor | Change | Reason |
+|---|---|---|---|
+| 1 | Abstract first sentence | "nine measurement dimensions" → "seven measurement dimensions + two stratification overlays" | MECE (BLOCKING) |
+| 2 | Abstract last clause | "every quantitative claim carries a citation" → "the majority...with the small number inline-flagged as unverified" | Honest overclaim fix |
+| 3 | §1 final paragraph | Contribution claim repositioned: framed as **industrial framework + curated dataset registry**, citing HELM [161], BIG-bench [162], DUE [163], Cui [159], Subramani [160] | Contribution-claim repositioning (BLOCKING) |
+| 4 | §1 organisation sentence | "§2 surveys the nine dimensions" → "...the seven dimensions...with...stratifications applied as overlays" | MECE |
+| 5 | §2 heading | "## 2. The Nine Measurement Dimensions" → "## 2. The Seven Measurement Dimensions and Two Stratification Overlays" | MECE |
+| 6 | Appendix B intro | Same 9→7+2 reframing | MECE |
+| 7 | D-LAYOUT novelty claim | "first framework, to the authors' knowledge, to combine..." → "among the first...PaIRS (vendored from hyprbots/vlm_ocr@1fbbc334, not externally validated)" | Soften circular novelty |
+| 8 | §3 first paragraph | "Three patterns emerge across the nine dimensions" → "...the seven dimensions and two overlays" | MECE |
+| 9 | §3 D-DOWNSTREAM line | Added explicit prior-art ack of Dror 2018 [164] paired-bootstrap and Ragas 2024 [166] RAG-eval lineage | Novelty soften |
+| 10 | §3 contribution-as-visibility | "This visibility constitutes the contribution" → "This visibility, paired with a curated and rerunnable cell registry, informs the industrial release discipline that follows" | Reposition contribution |
+
+### 8.2 New subsections inserted in §3
+
+- **§3.1 Scope limitations** — explicitly names handwritten/cursive (IAM, READ, RIMES), mathematical formula extraction (Im2Latex, CROHME), document classification, long-document / multi-page handling as out of scope, with one-sentence justification each.
+- **§3.2 Reproducibility caveats** — enumerates external-team blockers: SAVIOR-Bench v1 not redistributable; parse-intent-inhouse-v1 rubric internal; Qwen3.6 endpoint private; PaIRS commit private; ParseBench n=10 doc IDs not specified.
+- **§3.3 Statistical floor** — n=10 → expected bootstrap CI95 half-width ≈ ±0.15; honest acknowledgement that this can swamp engine-to-engine deltas; widening n is the correct next step.
+- **§3.4 Evaluator-LLM bias note** — D-DOWNSTREAM uses Qwen3.6 as judge; apples-to-apples constraint controls relative ranking but not absolute-scale bias.
+- **§3.5 Cross-engine fairness note** — Chandra/Qwen content-metric cells under uniform max_tokens=2048 are explicitly labeled apples-to-oranges.
+
+### 8.3 D-BBOX overlap note inserted
+
+D-BBOX intro now opens with a "*Relation to D-LAYOUT*" sentence acknowledging that D-BBOX is best read as a granularity sub-axis of D-LAYOUT rather than a fully orthogonal dimension.
+
+### 8.4 New bibliography entries [159]-[166]
+
+| # | Work |
+|---|---|
+| 159 | Cui et al. *Document AI: Benchmarks, Models and Applications*. Data Intelligence (2021). |
+| 160 | Subramani et al. *A Survey of Deep Learning Approaches for OCR and Document Understanding*. arXiv:2011.13534 (2020). |
+| 161 | Liang et al. *Holistic Evaluation of Language Models (HELM)*. TMLR (2023). |
+| 162 | Srivastava et al. *Beyond the Imitation Game (BIG-bench)*. TMLR (2023). |
+| 163 | Borchmann et al. *DUE: End-to-End Document Understanding Benchmark*. NeurIPS D&B (2021). |
+| 164 | Dror et al. *The Hitchhiker's Guide to Testing Statistical Significance in NLP*. ACL (2018). |
+| 165 | Tito, Karatzas, Valveny. *Hierarchical multimodal transformers for Multi-Page DocVQA*. Pattern Recognition (2023). |
+| 166 | Es et al. *RAGAs: Automated Evaluation of Retrieval Augmented Generation*. EACL Demo (2024). |
+
+### 8.5 What v5 does NOT address (residuals)
+
+- The critique's full list of missing surveys is partially covered (Cui, Subramani, HELM, BIG-bench, DUE added; Liu 2024 table survey, Ding 2025 VLM-era survey, Mathew InfographicVQA, DocLLM 2024 not added — would require additional verified bib entries).
+- The MECE re-framing is editorial (renames "9 dimensions" → "7+2"); the underlying framework spec at PARSE-DEEP-BENCHMARK-FRAMEWORK-2026-05-27 still labels them as 9 dimensions. A future framework v2 should align.
+- IDP industry literature (UiPath / Hyperscience / Indico / Rossum / ABBYY) is not added; this is a market-survey scope question the framework owner can decide.
+- Handwritten / math / classification / multi-page are NAMED as out-of-scope in §3.1 but not surveyed; would require dedicated dimension agents to add.
+
+### 8.6 v5 acceptance gate
+
+| Criterion | Target | v5 actual |
+|---|---|---|
+| Em-dashes | 0 | **0** |
+| HITL / forbidden brand phrasing | 0 | **0** |
+| Customer-name leaks | 0 | **0** |
+| Bibliography entries | 166 + 1 sub-entry [76b] | **167 effective** |
+| PDF renders cleanly | yes | yes (41 pages, 317 KB) |
+| MECE re-framing applied | every "nine dimensions" anchor | 5/5 anchors updated |
+
+### 8.7 v5 artifacts
+- `LIT-REVIEW-2026-06-16-v5.{md,html,pdf}` (canonical, critique-applied)
+- Published: https://niyatic.github.io/parse-x-litreview/ (v5 is now the index target)
+- This audit trail: `LIT-REVIEW-2026-06-16-REVIEW.md`
