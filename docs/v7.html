@@ -1,8 +1,4 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8"/><title>Parse-x: A Literature Review for the Deep Benchmark Framework (v6, coverage extended)</title>
-<style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"/><title>Parse-x: A Literature Review for the Deep Benchmark Framework (v7, MUST-ADD + NeurIPS-shape)</title><style>
 @page {
   size: A4;
   margin: 1.0in 1.0in 1.0in 1.0in;
@@ -81,52 +77,19 @@ a { color: #1a4f8f; text-decoration: none; }
 .abstract { font-size: 10pt; margin: 0.6em 1em; }
 .abstract h2 { font-size: 11pt; border: none; text-align: center; margin-top: 0; }
 
-nav.toc {
-  font-size: 0.92em;
-  background: #fbfbf6;
-  border: 1px solid #d9d9c8;
-  border-radius: 4px;
-  padding: 0.8em 1.2em;
-  margin: 1.2em 0 2em 0;
-}
-nav.toc summary { cursor: pointer; padding: 0.2em 0; font-size: 1.0em; }
-nav.toc ol { list-style: decimal; padding-left: 1.6em; margin: 0.4em 0; }
-nav.toc ol ol { list-style: lower-alpha; }
-nav.toc li { margin: 0.15em 0; line-height: 1.35; }
-nav.toc a { color: #1a4f8f; text-decoration: none; }
-nav.toc a:hover { text-decoration: underline; }
-h2, h3 { scroll-margin-top: 1em; }
-
-
-nav.toc {
-  font-size: 0.92em;
-  background: #fbfbf6;
-  border: 1px solid #d9d9c8;
-  border-radius: 4px;
-  padding: 0.8em 1.2em;
-  margin: 1.2em 0 2em 0;
-}
-nav.toc summary { cursor: pointer; padding: 0.2em 0; font-size: 1.0em; }
-nav.toc ol { list-style: decimal; padding-left: 1.6em; margin: 0.4em 0; }
-nav.toc ol ol { list-style: lower-alpha; }
-nav.toc li { margin: 0.15em 0; line-height: 1.35; }
-nav.toc a { color: #1a4f8f; text-decoration: none; }
-nav.toc a:hover { text-decoration: underline; }
-h2, h3 { scroll-margin-top: 1em; }
-
-</style>
-</head>
-<body>
-<h1>Parse-x: A Literature Review for the Deep Benchmark Framework</h1>
+nav.toc{font-size:.92em;background:#fbfbf6;border:1px solid #d9d9c8;border-radius:4px;padding:.8em 1.2em;margin:1.2em 0 2em 0;}nav.toc summary{cursor:pointer}nav.toc ol{padding-left:1.6em;margin:.4em 0}nav.toc ol ol{list-style:lower-alpha}nav.toc a{color:#1a4f8f;text-decoration:none}nav.toc a:hover{text-decoration:underline}h2,h3{scroll-margin-top:1em}
+</style></head><body><h1>Parse-x: A Literature Review for the Deep Benchmark Framework</h1>
 
 <p><em>Hyperbots Research, hyperapi-parse-x-research team</em>  </p>
 <p><em>2026-06-16</em></p>
 
-<div class="abstract"><h2>Abstract</h2><p>Document parsing has bifurcated into two literatures with little overlap: a multimodal-LLM benchmark line (OCRBench v2, OmniDocBench, olmOCR-Bench) that reports single aggregate numbers per model, and an in-house or release-discipline benchmark line (SAVIOR-Bench; the Apache-2.0 ParseBench corpus from LlamaIndex re-used with project-specific evaluation discipline) that exposes per-document score vectors, multilingual-quality stratification, and downstream-task lift. This review surveys the prior art for each of the seven measurement dimensions defined by the Parse-x Deep Benchmark Framework (D-OCR, D-PARSE-INTENT, D-LAYOUT, D-BBOX, D-TABLE, D-DOWNSTREAM, D-COST-LATENCY), together with the two stratification overlays (D-DOC-QUALITY and D-LANG) that cross-cut them and the sixteen-document-type taxonomy that cross-cuts them. For each dimension the canonical benchmarks, the relevant model families, and the specific deltas are identified that justify the framework's additional measurement discipline. Three appendices provide a structured model-lineage table covering the fifty-plus models in the project's measurement pool, a datasets-and-contamination posture register, and a vendor-and-API pin table for the closed-source services in scope. The review adopts a descriptive rather than evaluative stance: prior work is named for what it measures and what it does not measure, no winner is selected in advance, and the majority of quantitative claims are anchored to numbered references, with the small number that remain inline-flagged as unverified. See also the recent table-recognition survey <sup class="cite">[<a href="#ref-167">167</a>]</sup> and the 2024-2025 VLM-era document-understanding survey lineage [168, 169, 171] for adjacent taxonomies that this review extends with per-dimension scoring contracts and stratification overlays.</p></div>
-<nav class="toc" aria-label="Table of contents">
-<details open><summary><strong>Contents</strong></summary>
+<div class="abstract"><h2>Abstract</h2><p>Document parsing has bifurcated into two literatures with little overlap: a multimodal-LLM benchmark line (OCRBench v2, OmniDocBench, olmOCR-Bench) that reports single aggregate numbers per model, and an in-house or release-discipline benchmark line (SAVIOR-Bench; the Apache-2.0 ParseBench corpus from LlamaIndex re-used with project-specific evaluation discipline) that exposes per-document score vectors, multilingual-quality stratification, and downstream-task lift. This review surveys the prior art for each of the seven measurement dimensions defined by the Parse-x Deep Benchmark Framework (D-OCR, D-PARSE-INTENT, D-LAYOUT, D-BBOX, D-TABLE, D-DOWNSTREAM, D-COST-LATENCY), together with the two stratification overlays (D-DOC-QUALITY and D-LANG) that cross-cut them and the sixteen-document-type taxonomy that cross-cuts them. For each dimension the canonical benchmarks, the relevant model families, and the specific deltas are identified that justify the framework's additional measurement discipline. Three appendices provide a structured model-lineage table covering the fifty-plus models in the project's measurement pool, a datasets-and-contamination posture register, and a vendor-and-API pin table for the closed-source services in scope. The review adopts a descriptive rather than evaluative stance: prior work is named for what it measures and what it does not measure, no winner is selected in advance, and the majority of quantitative claims are anchored to numbered references, with the small number that remain inline-flagged as unverified. See also the recent table-recognition survey <sup class="cite">[<a href="#ref-167">167</a>]</sup> and the 2024-2025 Vision-Language Model (VLM)-era document-understanding survey lineage [168, 169, 171] for adjacent taxonomies that this review extends with per-dimension scoring contracts and stratification overlays.</p></div>
+<nav class="toc"><details open><summary><strong>Contents</strong></summary>
 <ol class="toc-list">
 <li><a href="#1-introduction">1. Introduction</a>
+<ol>
+<li><a href="#11-contributions">1.1 Contributions</a></li>
+</ol></li>
 <li><a href="#2-the-seven-measurement-dimensions-and-two-stratification-overlays">2. The Seven Measurement Dimensions and Two Stratification Overlays</a>
 <li><a href="#d-ocr-text-recognition-transcription">D-OCR: text recognition transcription</a>
 <ol>
@@ -191,121 +154,30 @@ h2, h3 { scroll-margin-top: 1em; }
 <li><a href="#a3-patterns">A.3. Patterns</a></li>
 <li><a href="#contamination-notes">Contamination notes</a></li>
 </ol></li>
-<li><a href="#appendix-b-datasets-contamination-posture">Appendix B. Datasets &amp;amp; Contamination Posture</a>
+<li><a href="#appendix-b-datasets-amp-contamination-posture">Appendix B. Datasets &amp;amp; Contamination Posture</a>
 <ol>
 <li><a href="#b1-public-datasets">B.1. Public datasets</a></li>
 <li><a href="#b2-internal-hyperbots-datasets">B.2. Internal Hyperbots datasets</a></li>
 <li><a href="#b3-circularity-and-the-resultszip-rule">B.3, Circularity and the results.zip rule</a></li>
 <li><a href="#b4-per-doc-type-coverage-gap-matrix">B.4, Per-doc-type coverage gap matrix</a></li>
 </ol></li>
-<li><a href="#appendix-c-vendor-api-pin-table">Appendix C, Vendor &amp;amp; API Pin Table</a>
+<li><a href="#appendix-c-vendor-amp-api-pin-table">Appendix C, Vendor &amp;amp; API Pin Table</a>
 <ol>
 <li><a href="#c1-azure-openai-routing-rule">C.1, Azure OpenAI routing rule</a></li>
-<li><a href="#c2-known-boundaries-caveats">C.2, Known boundaries &amp;amp; caveats</a></li>
+<li><a href="#c2-known-boundaries-amp-caveats">C.2, Known boundaries &amp;amp; caveats</a></li>
 <li><a href="#28-industrial-idp-landscape-vendor-and-analyst-literature">2.8 Industrial IDP landscape (vendor and analyst literature)</a></li>
 </ol></li>
 <li><a href="#3-discussion-and-open-gates">3. Discussion and Open Gates</a>
+<li><a href="#4-limitations">4. Limitations</a>
 <ol>
-<li><a href="#31-scope-limitations">3.1 Scope limitations</a></li>
+<li><a href="#41-scope-limitations">4.1 Scope limitations</a></li>
 <li><a href="#29-adjacent-surfaces-math-formula-extraction-document-classification">2.9 Adjacent surfaces (math formula extraction + document classification)</a></li>
-<li><a href="#32-reproducibility-caveats">3.2 Reproducibility caveats</a></li>
-<li><a href="#33-statistical-floor">3.3 Statistical floor</a></li>
-<li><a href="#34-evaluator-llm-bias-note">3.4 Evaluator-LLM bias note</a></li>
-<li><a href="#35-cross-engine-fairness-note-apples-to-oranges">3.5 Cross-engine fairness note (apples-to-oranges)</a></li>
+<li><a href="#42-reproducibility-caveats">4.2 Reproducibility caveats</a></li>
+<li><a href="#43-statistical-floor">4.3 Statistical floor</a></li>
+<li><a href="#44-evaluator-llm-bias-note">4.4 Evaluator-LLM bias note</a></li>
+<li><a href="#45-cross-engine-fairness-note-apples-to-oranges">4.5 Cross-engine fairness note (apples-to-oranges)</a></li>
 </ol></li>
-<li><a href="#references">References</a>
-</ol></details></nav>
-
-<nav class="toc" aria-label="Table of contents">
-<details open><summary><strong>Contents</strong></summary>
-<ol class="toc-list">
-<li><a href="#1-introduction">1. Introduction</a>
-<li><a href="#2-the-seven-measurement-dimensions-and-two-stratification-overlays">2. The Seven Measurement Dimensions and Two Stratification Overlays</a>
-<li><a href="#d-ocr-text-recognition-transcription">D-OCR: text recognition transcription</a>
-<ol>
-<li><a href="#prior-benchmarks">Prior benchmarks</a></li>
-<li><a href="#models-surveyed">Models surveyed</a></li>
-<li><a href="#gaps-relative-to-the-framework">Gaps relative to the framework</a></li>
-</ol></li>
-<li><a href="#d-parse-intent-structured-field-extraction-f1-wer">D-PARSE-INTENT: structured field extraction F1 + WER</a>
-<ol>
-<li><a href="#prior-benchmarks-2">Prior benchmarks</a></li>
-<li><a href="#models-surveyed-2">Models surveyed</a></li>
-<li><a href="#gaps-relative-to-the-framework-2">Gaps relative to the framework</a></li>
-</ol></li>
-<li><a href="#d-layout-layout-element-accuracy-reading-order-pairs">D-LAYOUT: layout-element accuracy + reading-order (PaIRS)</a>
-<ol>
-<li><a href="#prior-benchmarks-3">Prior benchmarks</a></li>
-<li><a href="#models-surveyed-3">Models surveyed</a></li>
-<li><a href="#gaps-relative-to-the-framework-3">Gaps relative to the framework</a></li>
-</ol></li>
-<li><a href="#d-bbox-bounding-box-iou-field-to-region-grounding">D-BBOX: bounding-box IoU + field-to-region grounding</a>
-<ol>
-<li><a href="#prior-benchmarks-4">Prior benchmarks</a></li>
-<li><a href="#models-surveyed-4">Models surveyed</a></li>
-<li><a href="#gaps-relative-to-the-framework-4">Gaps relative to the framework</a></li>
-</ol></li>
-<li><a href="#d-table-gtrm-tablerecordmatch-cell-f1">D-TABLE: GTRM + TableRecordMatch + cell F1</a>
-<ol>
-<li><a href="#prior-benchmarks-5">Prior benchmarks</a></li>
-<li><a href="#models-surveyed-5">Models surveyed</a></li>
-<li><a href="#gaps-relative-to-the-framework-5">Gaps relative to the framework</a></li>
-<li><a href="#251-survey-landscape-table-recognition-vlm-era-document-ai">2.5.1 Survey landscape (table recognition + VLM-era document AI)</a></li>
-</ol></li>
-<li><a href="#d-doc-quality-stratification-by-document-quality-q-highmedlow">D-DOC-QUALITY: stratification by document quality (Q-HIGH/MED/LOW)</a>
-<ol>
-<li><a href="#prior-benchmarks-6">Prior benchmarks</a></li>
-<li><a href="#models-surveyed-6">Models surveyed</a></li>
-<li><a href="#gaps-relative-to-the-framework-6">Gaps relative to the framework</a></li>
-</ol></li>
-<li><a href="#d-lang-multilingual-evaluation-overlays-endefreszhjaar">D-LANG: multilingual evaluation overlays (EN/DE/FR/ES/ZH/JA/AR)</a>
-<ol>
-<li><a href="#prior-benchmarks-7">Prior benchmarks</a></li>
-<li><a href="#models-surveyed-7">Models surveyed</a></li>
-<li><a href="#gaps-relative-to-the-framework-7">Gaps relative to the framework</a></li>
-</ol></li>
-<li><a href="#d-downstream-parse-downstream-extract-f1-parse-lift-new-ceo-required-dimension">D-DOWNSTREAM: parse → downstream extract F1 (parse-lift; new CEO-required dimension)</a>
-<ol>
-<li><a href="#prior-benchmarks-8">Prior benchmarks</a></li>
-<li><a href="#models-surveyed-8">Models surveyed</a></li>
-<li><a href="#gaps-relative-to-the-framework-8">Gaps relative to the framework</a></li>
-</ol></li>
-<li><a href="#d-cost-latency-correct-and-p50p95p99-latency">D-COST-LATENCY: $/correct and p50/p95/p99 latency</a>
-<ol>
-<li><a href="#prior-benchmarks-9">Prior benchmarks</a></li>
-<li><a href="#models-surveyed-9">Models surveyed</a></li>
-<li><a href="#gaps-relative-to-the-framework-9">Gaps relative to the framework</a></li>
-<li><a href="#28-handwritten-document-recognition-coverage-extension">2.8 Handwritten document recognition (coverage extension)</a></li>
-</ol></li>
-<li><a href="#appendix-a-model-lineage">Appendix A. Model Lineage</a>
-<ol>
-<li><a href="#a1-verified-lineage">A.1. Verified lineage</a></li>
-<li><a href="#a2-verified-via-dossier-only-deep-citation-pending">A.2. Verified-via-DOSSIER-only; deep-citation PENDING</a></li>
-<li><a href="#a3-patterns">A.3. Patterns</a></li>
-<li><a href="#contamination-notes">Contamination notes</a></li>
-</ol></li>
-<li><a href="#appendix-b-datasets-contamination-posture">Appendix B. Datasets &amp;amp; Contamination Posture</a>
-<ol>
-<li><a href="#b1-public-datasets">B.1. Public datasets</a></li>
-<li><a href="#b2-internal-hyperbots-datasets">B.2. Internal Hyperbots datasets</a></li>
-<li><a href="#b3-circularity-and-the-resultszip-rule">B.3, Circularity and the results.zip rule</a></li>
-<li><a href="#b4-per-doc-type-coverage-gap-matrix">B.4, Per-doc-type coverage gap matrix</a></li>
-</ol></li>
-<li><a href="#appendix-c-vendor-api-pin-table">Appendix C, Vendor &amp;amp; API Pin Table</a>
-<ol>
-<li><a href="#c1-azure-openai-routing-rule">C.1, Azure OpenAI routing rule</a></li>
-<li><a href="#c2-known-boundaries-caveats">C.2, Known boundaries &amp;amp; caveats</a></li>
-<li><a href="#28-industrial-idp-landscape-vendor-and-analyst-literature">2.8 Industrial IDP landscape (vendor and analyst literature)</a></li>
-</ol></li>
-<li><a href="#3-discussion-and-open-gates">3. Discussion and Open Gates</a>
-<ol>
-<li><a href="#31-scope-limitations">3.1 Scope limitations</a></li>
-<li><a href="#29-adjacent-surfaces-math-formula-extraction-document-classification">2.9 Adjacent surfaces (math formula extraction + document classification)</a></li>
-<li><a href="#32-reproducibility-caveats">3.2 Reproducibility caveats</a></li>
-<li><a href="#33-statistical-floor">3.3 Statistical floor</a></li>
-<li><a href="#34-evaluator-llm-bias-note">3.4 Evaluator-LLM bias note</a></li>
-<li><a href="#35-cross-engine-fairness-note-apples-to-oranges">3.5 Cross-engine fairness note (apples-to-oranges)</a></li>
-</ol></li>
+<li><a href="#5-broader-impact">5. Broader Impact</a>
 <li><a href="#references">References</a>
 </ol></details></nav>
 
@@ -314,7 +186,19 @@ h2, h3 { scroll-margin-top: 1em; }
 
 <p>The Parse-x Deep Benchmark Framework <sup class="cite">[<a href="#ref-25">25</a>]</sup> decomposes the question 'is this document-parsing engine best for finance documents?' into nine orthogonal measurement dimensions and a sixteen-type document taxonomy. Each cell of the resulting matrix is anchored to a public benchmark where possible (ParseBench <sup class="cite">[<a href="#ref-49">49</a>]</sup>, SAVIOR-Bench <sup class="cite">[<a href="#ref-1">1</a>]</sup>, OmniDocBench <sup class="cite">[<a href="#ref-4">4</a>]</sup>, PubTabNet, DocLayNet) and falls back to in-house silver pipelines (BBOX-SILVER-PIPELINE-SPEC) or stratified hold-outs (dataset_95) when public coverage is absent. The framework's publish-gate requires per-document score vectors with bootstrap CI95 (or an explicit attestation label), uniform decoding pins (temperature 0.1, top-p 0.9, max_tokens 2048, seed 20260516), and fine-tune-vs-zero-shot disclosure on every cell.</p>
 
-<p>This literature review serves two purposes. First, it surveys the prior art per dimension so that each new leaderboard cell can be interpreted against the right historical baseline. Second, it surfaces the methodological gaps in that prior art (particularly the absent per-document vectors, the inconsistent fine-tune disclosure, the under-stratified multilingual and quality axes, and the near-total absence of parse-to-downstream lift measurements) that motivate the framework's additional measurement discipline. Per <sup class="cite">[<a href="#ref-161">161</a>]</sup> and <sup class="cite">[<a href="#ref-162">162</a>]</sup>, per-document score vectors with bootstrap confidence intervals are now a baseline expectation for language-model evaluation; the contribution claimed here is not methodological novelty over that baseline, but rather an industrial framework and curated dataset registry that ports the discipline to document parsing, makes the open gates visible, and provides a rerunnable-cell convention compatible with <sup class="cite">[<a href="#ref-163">163</a>]</sup> (DUE, the most relevant prior document-understanding framework). Earlier surveys (<sup class="cite">[<a href="#ref-159">159</a>]</sup>, <sup class="cite">[<a href="#ref-160">160</a>]</sup>) catalogue the field at the model level; this review pairs that prior art with a measurement-level framework. Running in parallel to that academic line is a sizeable industrial-IDP literature (UiPath Document Understanding <sup class="cite">[<a href="#ref-172">172</a>]</sup>, Hyperscience <sup class="cite">[<a href="#ref-175">175</a>]</sup>, Rossum <sup class="cite">[<a href="#ref-176">176</a>]</sup>, Microsoft 365 document processing <sup class="cite">[<a href="#ref-177">177</a>]</sup>, Google Document AI <sup class="cite">[<a href="#ref-174">174</a>]</sup>, AWS Textract <sup class="cite">[<a href="#ref-173">173</a>]</sup>, plus the Forrester/Gartner/Everest/IDC analyst taxonomies that segment them) which shares the same parse-then-extract architecture but reports customer-pilot headline accuracy rather than per-document vectors; §2.8 covers that landscape and its evaluation-discipline gap.</p>
+<p>This literature review serves two purposes. First, it surveys the prior art per dimension so that each new leaderboard cell can be interpreted against the right historical baseline. Second, it surfaces the methodological gaps in that prior art (particularly the absent per-document vectors, the inconsistent fine-tune disclosure, the under-stratified multilingual and quality axes, and the near-total absence of parse-to-downstream lift measurements) that motivate the framework's additional measurement discipline. Per <sup class="cite">[<a href="#ref-161">161</a>]</sup> and <sup class="cite">[<a href="#ref-162">162</a>]</sup>, per-document score vectors with bootstrap confidence intervals are now a baseline expectation for language-model evaluation; the contribution claimed here is not methodological novelty over that baseline, but rather an industrial framework and curated dataset registry that ports the discipline to document parsing, makes the open gates visible, and provides a rerunnable-cell convention compatible with <sup class="cite">[<a href="#ref-163">163</a>]</sup> (DUE, the most relevant prior document-understanding framework). Earlier surveys (<sup class="cite">[<a href="#ref-159">159</a>]</sup>, <sup class="cite">[<a href="#ref-160">160</a>]</sup>) catalogue the field at the model level; this review pairs that prior art with a measurement-level framework.</p>
+
+<h3 id="11-contributions">1.1 Contributions</h3>
+
+<p>The contributions of this review are operational rather than methodological:</p>
+
+<p>1. <strong>A nine-axis coverage map</strong> (seven measurement dimensions plus two stratification overlays) over the document-parsing literature 2019–2026, with explicit per-dimension prior-art catalogues.</p>
+<p>2. <strong>A unified model lineage table</strong> (Appendix A) covering 50+ open-source and proprietary engines, with base architecture, training data, license, and version pin per row.</p>
+<p>3. <strong>A datasets-and-contamination posture register</strong> (Appendix B) that names which corpora are public vs internal and flags known training-data overlap.</p>
+<p>4. <strong>A vendor and API pin table</strong> (Appendix C) capturing the closed-source services in scope with current model snapshots and API version pins as of 2026-06-16.</p>
+<p>5. <strong>An honest residuals list</strong> (§4) naming reproducibility blockers, statistical-power limits, and four content surfaces (handwriting, math formula extraction, document classification, long-document handling) treated only briefly.</p>
+<p>6. <strong>A measurement-discipline template</strong> ported from HELM <sup class="cite">[<a href="#ref-161">161</a>]</sup> and BIG-bench <sup class="cite">[<a href="#ref-162">162</a>]</sup>, applied to document parsing for the first time as a standing release-gate rather than a per-paper choice.</p>
+<p> Running in parallel to that academic line is a sizeable industrial-IDP literature (UiPath Document Understanding <sup class="cite">[<a href="#ref-172">172</a>]</sup>, Hyperscience <sup class="cite">[<a href="#ref-175">175</a>]</sup>, Rossum <sup class="cite">[<a href="#ref-176">176</a>]</sup>, Microsoft 365 document processing <sup class="cite">[<a href="#ref-177">177</a>]</sup>, Google Document AI <sup class="cite">[<a href="#ref-174">174</a>]</sup>, AWS Textract <sup class="cite">[<a href="#ref-173">173</a>]</sup>, plus the Forrester/Gartner/Everest/IDC analyst taxonomies that segment them) which shares the same parse-then-extract architecture but reports customer-pilot headline accuracy rather than per-document vectors; §2.8 covers that landscape and its evaluation-discipline gap.</p>
 
 <p>The remainder of the paper is organized as the framework dictates. §2 surveys the seven dimensions in order, with the D-DOC-QUALITY and D-LANG stratifications applied as overlays throughout. Appendices A–C provide the model lineage table, the datasets-and-contamination posture register, and the vendor-and-API pin table. Section 3 closes with a discussion of the largest open gates that block first-pass cell publication.</p>
 
@@ -322,7 +206,7 @@ h2, h3 { scroll-margin-top: 1em; }
 
 <h2 id="d-ocr-text-recognition-transcription">D-OCR: text recognition transcription</h2>
 
-<p>The D-OCR dimension of Parse-x scores the most primitive question that can be asked of any document-AI engine: given a page image or PDF, does the system recover the document's tokens, and how cleanly? The framework's primary metric is <code>savior_word_recall</code>, a multiset recall over reference tokens taken from SAVIOR-Bench (n=509, IAA 0.761 via fuzzy-string similarity over 187 double-annotated pairs), with <code>savior_word_precision</code>, normalized Levenshtein <code>ocr_edit_distance</code>, and word error rate as secondaries <sup class="cite">[<a href="#ref-1">1</a>]</sup><sup class="cite">[<a href="#ref-2">2</a>]</sup>. The dimension is separated from D-PARSE-INTENT (structured field extraction) and D-DOWNSTREAM (chained pipelines) so that hallucinations and dropped tokens surface as transcription-level signals rather than being masked by a downstream rubric. The publish-gate requires per-document score vectors (for 2000-resample bootstrap CI95) or an explicit <code>provenance: attested</code> label; a discipline that most external OCR leaderboards do not satisfy.</p>
+<p>The D-OCR dimension of Parse-x scores the most primitive question that can be asked of any document-AI engine: given a page image or PDF, does the system recover the document's tokens, and how cleanly? The framework's primary metric is <code>savior_word_recall</code>, a multiset recall over reference tokens taken from SAVIOR-Bench (n=509, Inter-Annotator Agreement (IAA) 0.761 via fuzzy-string similarity over 187 double-annotated pairs), with <code>savior_word_precision</code>, normalized Levenshtein <code>ocr_edit_distance</code>, and word error rate as secondaries <sup class="cite">[<a href="#ref-1">1</a>]</sup><sup class="cite">[<a href="#ref-2">2</a>]</sup>. The dimension is separated from D-PARSE-INTENT (structured field extraction) and D-DOWNSTREAM (chained pipelines) so that hallucinations and dropped tokens surface as transcription-level signals rather than being masked by a downstream rubric. The publish-gate requires per-document score vectors (for 2000-resample bootstrap CI95) or an explicit <code>provenance: attested</code> label; a discipline that most external OCR leaderboards do not satisfy.</p>
 
 <h3 id="prior-benchmarks">Prior benchmarks</h3>
 
@@ -341,6 +225,7 @@ h2, h3 { scroll-margin-top: 1em; }
 <p>The dossier inventories ~31 OCR cells in <code>DC-000__ocr-edit-distance-v1</code> <sup class="cite">[<a href="#ref-10">10</a>]</sup>. Grouped by family:</p>
 
 <ul>
+<li><strong>2025-2026 frontier additions.</strong> xAI Grok 4 / 4.3 (multimodal with native OCR, 256k context; Grok 4.3 beta April 2026 adds native multimodal video) <sup class="cite">[<a href="#ref-190">190</a>]</sup>; Meta Llama 4 family, Scout (109B / 10M-token context) and Maverick (400B / 1M-token context), both with native multimodality via early-fusion <sup class="cite">[<a href="#ref-191">191</a>]</sup>. Both join the panel as candidate D-OCR engines once OCR-specific evaluation lands; current panel rows are PENDING-MEASUREMENT.</li>
 <li><strong>General-purpose document VLMs.</strong> Qwen3-VL-235B, Qwen2.5-VL-3B/7B (the SAVIOR-Train fine-tune base), Qwen3.6-35B-A3B, InternVL2-8B/26B/76B, LLaVA-1.6-34B, GPT-4o / GPT-4o-mini, Gemini-1.5 Flash/Pro, Claude-Sonnet-4.6 <sup class="cite">[<a href="#ref-10">10</a>]</sup>. Most are evaluated zero-shot; SAVIOR fine-tuning on Qwen2.5-VL-7B with LoRA (rank 32, α 64, 5 epochs, 2× H100) lifts word-recall to 0.9294 <sup class="cite">[<a href="#ref-2">2</a>]</sup><sup class="cite">[<a href="#ref-1">1</a>]</sup>.</li>
 <li><strong>OCR-specialist VLMs.</strong> GLM-OCR (edit-distance 0.019, rank-1 specialist on the SAVIOR leaderboard), DeepSeek-OCR-2, GOT-OCR-2.0, DocOwl2 / mPLUG-DocOwl1.5, Fox, TextMonkey, Vary-toy, Nougat-0.1.0, FireRed-OCR, Logics-Parsing-v2, Chandra (<code>datalab-to/chandra-ocr-2</code>) <sup class="cite">[<a href="#ref-10">10</a>]</sup><sup class="cite">[<a href="#ref-1">1</a>]</sup>.</li>
 <li><strong>Decoupled / pipeline parsers.</strong> MinerU 0.9 and MinerU 2.5 (1.2B, coarse-to-fine decoupled, OmniDocBench 90.67) <sup class="cite">[<a href="#ref-5">5</a>]</sup>; Marker-1.0; Surya; PaddleOCR-v4 and PaddleOCR-VL-1.5 (0.9B ERNIE-4.5 backbone, OmniDocBench v1.5 94.5%) <sup class="cite">[<a href="#ref-6">6</a>]</sup>; HyperAPI-PaddleOCR-OURS; olmOCR / olmOCR-2-7B-1025 <sup class="cite">[<a href="#ref-8">8</a>]</sup>.</li>
@@ -361,7 +246,7 @@ h2, h3 { scroll-margin-top: 1em; }
 <ul>
 <li><strong>FUNSD</strong> <sup class="cite">[<a href="#ref-9">9</a>]</sup> (see App. B.1): relevant here for form key-value labelling (entity-level SER F1) but does not exercise line-item structure, multi-page reasoning, or transcription error.</li>
 <li><strong>CORD</strong> <sup class="cite">[<a href="#ref-13">13</a>]</sup>: 1,000 Indonesian receipts (800/100/100), 30 entity types in 4 groups (Menu / Void menu / Subtotal / Total). Evaluated with field-level F1 and tree-edit-distance accuracy; LayoutLMv3-large reports 97.46 F1 (Table 1, official 800/100 split; base 96.56), Donut 91.6 <sup class="cite">[<a href="#ref-12">12</a>]</sup><sup class="cite">[<a href="#ref-14">14</a>]</sup>. Receipt-only, short documents, single language.</li>
-<li><strong>SROIE (ICDAR 2019, Task 3)</strong> <sup class="cite">[<a href="#ref-15">15</a>]</sup> (see App. B.1): the de facto entry-level KIE benchmark; relevant here as a fixed-schema baseline well below the free-schema inhouse-v1 panel.</li>
+<li><strong>SROIE (ICDAR 2019, Task 3)</strong> <sup class="cite">[<a href="#ref-15">15</a>]</sup> (see App. B.1): the de facto entry-level Key Information Extraction (KIE) benchmark; relevant here as a fixed-schema baseline well below the free-schema inhouse-v1 panel.</li>
 <li><strong>Kleister NDA / Kleister Charity</strong> <sup class="cite">[<a href="#ref-16">16</a>]</sup>: 540 NDAs (3,229 pages, 2,160 entities) and 2,788 charity reports (61,643 pages, 21,612 entities); strongest models report 81.77 / 83.57 F1; adds long-document layout, but only English and non-financial-invoice schemas.</li>
 <li><strong>DocILE-2023</strong> <sup class="cite">[<a href="#ref-17">17</a>]</sup>: 6.7k annotated business documents + 100k synthetic + ~1M unlabelled with 55 KILE/LIR classes from invoices/orders (ICDAR-2023 + CLEF-2023 competition); the closest public analogue to the framework's invoice-heavy T-01 doc-type, though it does not score transcription WER alongside KIE F1.</li>
 <li><strong>DeepForm</strong> <sup class="cite">[<a href="#ref-18">18</a>]</sup>: political-ad TV-station disclosure forms maintained by ProPublica; appears as a KIE task in the DUE benchmark <sup class="cite">[<a href="#ref-19">19</a>]</sup> where answer normalization is required. Narrow domain; small held-out size.</li>
@@ -391,7 +276,7 @@ h2, h3 { scroll-margin-top: 1em; }
 
 <h2 id="d-layout-layout-element-accuracy-reading-order-pairs">D-LAYOUT: layout-element accuracy + reading-order (PaIRS)</h2>
 
-<p>D-LAYOUT scores whether a parse engine recovers a document's spatial organization (the tree of titles, paragraphs, tables, figures and captions, and the <em>order</em> a human would read them in) and not merely the characters those regions contain. The Parse-x framework operationalises this as three metrics: <code>layout_element_accuracy</code> (element-match F1 over the gold layout tree), <code>reading_order_accuracy</code> (rank-correlation over the ordered element list), and <code>pairs_layout</code> (PaIRS, a prompt-controlled pairwise z-euclidean spatial-relationship score, vendored from <code>hyprbots/vlm_ocr@1fbbc334</code>) <sup class="cite">[<a href="#ref-25">25</a>]</sup>. The dimension explicitly addresses SAVIOR-Bench Recommendation R8, which flagged that no layout-awareness ground-truth was available in the original SAVIOR corpus and listed the facet as "defined, not yet measured" <sup class="cite">[<a href="#ref-1">1</a>]</sup>.</p>
+<p>D-LAYOUT scores whether a parse engine recovers a document's spatial organization (the tree of titles, paragraphs, tables, figures and captions, and the <em>order</em> a human would read them in) and not merely the characters those regions contain. The Parse-x framework operationalises this as three metrics: <code>layout_element_accuracy</code> (element-match F1 over the gold layout tree), <code>reading_order_accuracy</code> (Spearman footrule between the predicted and ground-truth element orderings; alternative metrics in the field include Kendall tau, the Reading Edit Distance Score (REDS), and the Layout Ordering Error Rate (LOER) of Coquenet et al. <sup class="cite">[<a href="#ref-197">197</a>]</sup>; see <sup class="cite">[<a href="#ref-196">196</a>]</sup> for a recent EMNLP-2024 treatment of reading-order modelling), and <code>pairs_layout</code> (PaIRS, a prompt-controlled pairwise z-euclidean spatial-relationship score, vendored from <code>hyprbots/vlm_ocr@1fbbc334</code>) <sup class="cite">[<a href="#ref-25">25</a>]</sup>. The dimension explicitly addresses SAVIOR-Bench Recommendation R8, which flagged that no layout-awareness ground-truth was available in the original SAVIOR corpus and listed the facet as "defined, not yet measured" <sup class="cite">[<a href="#ref-1">1</a>]</sup>.</p>
 
 <h3 id="prior-benchmarks-3">Prior benchmarks</h3>
 
@@ -403,7 +288,7 @@ h2, h3 { scroll-margin-top: 1em; }
 
 <p><strong>ReadingBank</strong> (Microsoft, paired with LayoutReader, EMNLP 2021) is the canonical reading-order benchmark: ~500k pages where order is harvested as weak supervision from Word-XML and then reprojected onto the rendered PDF; metrics are BLEU / token-rank Average Page-level Accuracy. LayoutReader achieves near-ceiling on the in-distribution split <sup class="cite">[<a href="#ref-29">29</a>]</sup>. ReadingBank's weakness is that order labels inherit Word's linear flow, so multi-column scientific or financial layouts can be undersupported.</p>
 
-<p><strong>OmniDocBench</strong> (OpenDataLab, CVPR 2025) is the closest contemporary to Parse-x: 1,355–1,651 PDF pages, 10 document types, 5 layout types, 5 languages, 100k+ region annotations with reading order, evaluated by Normalised Edit Distance (NED) over the predicted reading sequence <sup class="cite">[<a href="#ref-30">30</a>]</sup>. v1.5 adds layout-type-stratified NED splits. OmniDocBench measures end-to-end reading order via NED but does not isolate <code>pairs_layout</code>-style PC-vs-NPC comparability, and its taxonomy does not align 1:1 with Parse-x's 16-doc-type taxonomy.</p>
+<p><strong>OmniDocBench</strong> (OpenDataLab, CVPR 2025) is the closest contemporary to Parse-x: 1,355–1,651 PDF pages, 10 document types, 5 layout types, 5 languages, 100k+ region annotations with reading order, evaluated by Normalised Edit Distance (Normalized Edit Distance (NED)) over the predicted reading sequence <sup class="cite">[<a href="#ref-30">30</a>]</sup>. v1.5 adds layout-type-stratified NED splits. OmniDocBench measures end-to-end reading order via NED but does not isolate <code>pairs_layout</code>-style PC-vs-NPC comparability, and its taxonomy does not align 1:1 with Parse-x's 16-doc-type taxonomy.</p>
 
 <p><strong>SAVIOR-Bench layout facet</strong> is defined (element accuracy, reading-order accuracy, PaIRS) but explicitly <em>not measured</em> in the original release; the corpus carries 509 docs with extraction gold and an IAA-attested 0.761 fuzzy-string agreement on 187 double-annotated pairs, but no layout-tree gold <sup class="cite">[<a href="#ref-1">1</a>]</sup>.</p>
 
@@ -465,7 +350,7 @@ h2, h3 { scroll-margin-top: 1em; }
 
 <h2 id="d-table-gtrm-tablerecordmatch-cell-f1">D-TABLE: GTRM + TableRecordMatch + cell F1</h2>
 
-<p>Table structure recognition (TSR) is the hard core of enterprise document parsing: invoices, packing slips, bank statements, 10-Q financials, and insurance schedules are dominated by tabular content with spanning headers, merged cells, borderless rules, repeated multi-page headers, and locale-specific currency formatting <sup class="cite">[<a href="#ref-44">44</a>]</sup>. A high word-recall transcription can still get the row/column assignment wrong, which destroys downstream extraction <sup class="cite">[<a href="#ref-44">44</a>]</sup>. D-TABLE in the Parse-x framework therefore scores table-bearing documents (T-04 bank statement, T-11 financial statement, T-16 packing slip) on whether the engine recovers both the grid topology and the cell content, using the ParseBench <code>table</code> split (n=503 ground-truth HTML tables, 284 documents) with <strong>GTRM</strong> (the unweighted average of GriTS and TableRecordMatch) as primary, and TEDS plus cell-F1 as secondaries [parsebench2026, framework2026].</p>
+<p>Table structure recognition (TSR) is the hard core of enterprise document parsing: invoices, packing slips, bank statements, 10-Q financials, and insurance schedules are dominated by tabular content with spanning headers, merged cells, borderless rules, repeated multi-page headers, and locale-specific currency formatting <sup class="cite">[<a href="#ref-44">44</a>]</sup>. A high word-recall transcription can still get the row/column assignment wrong, which destroys downstream extraction <sup class="cite">[<a href="#ref-44">44</a>]</sup>. D-TABLE in the Parse-x framework therefore scores table-bearing documents (T-04 bank statement, T-11 financial statement, T-16 packing slip) on whether the engine recovers both the grid topology and the cell content, using the ParseBench <code>table</code> split (n=503 ground-truth HTML tables, 284 documents) with <strong>GTRM</strong> (the unweighted average of GriTS and TableRecordMatch; this composite is a Parse-x convention rather than a field-standard metric, and readers may prefer to report GriTS and TableRecordMatch separately) as primary, and TEDS plus cell-F1 as secondaries [parsebench2026, framework2026].</p>
 
 <h3 id="prior-benchmarks-5">Prior benchmarks</h3>
 
@@ -502,7 +387,7 @@ h2, h3 { scroll-margin-top: 1em; }
 
 <p>Shi and Shi <sup class="cite">[<a href="#ref-167">167</a>]</sup> ("A Review On Table Recognition Based On Deep Learning", arXiv:2312.04808) organize TSR into datasets/metrics, two-stage detection+structure models, end-to-end models, and data-centric augmentation. They consolidate PubTabNet, FinTabNet, ICDAR-cTDaR, PubTables-1M, and the TEDS/GriTS metric family that D-TABLE depends on, but they do not cover enterprise stratification (bank statement vs 10-Q vs packing slip), the Q-LOW degraded-scan overlay, or the GTRM = mean(GriTS, TableRecordMatch) convention that ParseBench introduces; the review is also distributed in Chinese with a GitHub companion, which limits direct reuse.</p>
 
-<p>Ding et al. <sup class="cite">[<a href="#ref-168">168</a>]</sup> ("A Survey on MLLM-based Visually Rich Document Understanding", arXiv:2507.09861, ACL 2026 Findings) is the closest match to the VLM-era slice of Parse-x. It taxonomizes OCR-based vs OCR-free MLLM pipelines, pretraining and instruction-tuning recipes, multi-page and multilingual handling, and the emerging RAG/agentic layer. It does not commit to a per-dimension scoring contract (no D-OCR/D-TABLE/D-BBOX separation), does not pin decoding/prompt protocols, and reports no cost-latency dimension; D-COST-LATENCY and the pinned-prompt comparability layer are therefore outside its scope. The earlier Ding et al. 2024 survey <sup class="cite">[<a href="#ref-169">169</a>]</sup> (arXiv:2408.01287) covers the pre-MLLM VRD lineage (LayoutLM family, multimodal fusion, pretraining objectives) and is the natural companion citation for §D-LAYOUT and §D-PARSE-INTENT.</p>
+<p>Ding et al. <sup class="cite">[<a href="#ref-168">168</a>]</sup> ("A Survey on MLLM-based Visually Rich Document Understanding", arXiv:2507.09861, ACL 2026 Findings) is the closest match to the VLM-era slice of Parse-x. It taxonomizes OCR-based vs OCR-free MLLM pipelines, pretraining and instruction-tuning recipes, multi-page and multilingual handling, and the emerging RAG/agentic layer. It does not commit to a per-dimension scoring contract (no D-OCR/D-TABLE/D-BBOX separation), does not pin decoding/prompt protocols, and reports no cost-latency dimension; D-COST-LATENCY and the pinned-prompt comparability layer are therefore outside its scope. The earlier Ding et al. 2024 survey <sup class="cite">[<a href="#ref-169">169</a>]</sup> (arXiv:2408.01287) covers the pre-MLLM Visually Rich Document (VRD) lineage (LayoutLM family, multimodal fusion, pretraining objectives) and is the natural companion citation for §D-LAYOUT and §D-PARSE-INTENT.</p>
 
 <p>Barboule, Piwowarski and Chabot <sup class="cite">[<a href="#ref-171">171</a>]</sup> (arXiv:2501.02235) survey question-answering over visually rich documents and explicitly note that the field "still lacks consensus on several key aspects of the processing pipeline", which is the gap D-DOWNSTREAM tries to close by anchoring to extractive QA lift rather than free-form generation. Somvanshi et al. <sup class="cite">[<a href="#ref-170">170</a>]</sup> (arXiv:2410.12034) survey deep tabular learning (TabNet, SAINT, FT-Transformer, TabPFN, diffusion-based synthesis); it is adjacent rather than central, because Parse-x scores table extraction from images/PDFs, not downstream supervised learning on already-structured tables, but it bounds what "good" looks like once a parser has produced a clean grid.</p>
 
@@ -628,7 +513,7 @@ h2, h3 { scroll-margin-top: 1em; }
 
 <p><strong>Artificial Analysis.</strong> A widely used third-party leaderboard that pins all models to the same probe hardware and reports median output speed (P50 over 72 hours), time-to-first-token latency, and blended input/output price per million tokens <sup class="cite">[<a href="#ref-84">84</a>]</sup>. By their March 2026 cut, the price spread across frontier models is roughly 250x bottom-to-top and YoY prices have dropped ~80% <sup class="cite">[<a href="#ref-85">85</a>]</sup>. The methodology is rigorous on serving-side metrics but the workload is short prompt/short completion chat (not multi-page PDFs with image tokens) and there is no parse-correctness gate.</p>
 
-<p><strong>MLPerf Inference.</strong> MLCommons' MLPerf Inference v5.1 and v6.0 are the hardware-vendor standard, with audited submissions reporting Offline tokens/sec and Server p99 TTFT for models like Llama-3.1-8B and GPT-OSS-120B; v6.0 specifically tracks p99 TTFT for MoE-routed serving (e.g., a 2,903 → 2,001 ms reduction via the BLAZE routing patch) [mlperf51-2025, mlperfv6-2026]. MLPerf measures serving-stack efficiency under SLOs, but the "tasks" are LLM-shaped (chat, summarization), not document parse with ground-truth gold; $/correct is not a MLPerf concept.</p>
+<p><strong>MLPerf Inference.</strong> MLCommons' MLPerf Inference v5.1 and v6.0 are the hardware-vendor standard, with audited submissions reporting Offline tokens/sec and Server p99 TTFT for models like Llama-3.1-8B and GPT-OSS-120B; v6.0 specifically tracks p99 TTFT for Mixture of Experts (MoE)-routed serving (e.g., a 2,903 → 2,001 ms reduction via the BLAZE routing patch) [mlperf51-2025, mlperfv6-2026]. MLPerf measures serving-stack efficiency under SLOs, but the "tasks" are LLM-shaped (chat, summarization), not document parse with ground-truth gold; $/correct is not a MLPerf concept.</p>
 
 <p><strong>LLM-inference latency surveys.</strong> Production-oriented metric guides (BentoML, GMI Cloud) codify the p50/p95/p99 + TTFT + ITL + throughput stack and explicitly warn that "a 0.4 s p50 / 4 s p99 looks great in demos and breaks in production" [bentomlmetrics2026, gmicloud2026]. These are methodology references, not benchmarks per se.</p>
 
@@ -660,7 +545,7 @@ h2, h3 { scroll-margin-top: 1em; }
 
 <h3 id="28-handwritten-document-recognition-coverage-extension">2.8 Handwritten document recognition (coverage extension)</h3>
 
-<p>Handwritten document recognition (HTR) was named out-of-scope in v4 of this review, but the senior critique flagged that the printed-text framing leaves a measurable surface, scanned ledgers, signed forms, archival correspondence, uncovered. This subsection inventories the prior art so a future Parse-x overlay can be wired against it without re-discovery.</p>
+<p>Handwritten document recognition (Handwritten Text Recognition (HTR)) was named out-of-scope in v4 of this review, but the senior critique flagged that the printed-text framing leaves a measurable surface, scanned ledgers, signed forms, archival correspondence, uncovered. This subsection inventories the prior art so a future Parse-x overlay can be wired against it without re-discovery.</p>
 
 <p><strong>Datasets.</strong> The IAM Handwriting Database <sup class="cite">[<a href="#ref-178">178</a>]</sup> remains the canonical offline English line-and-word corpus (657 writers, 1,539 scanned pages, ~13k labeled lines) and defines the per-writer split convention every modern HTR paper still uses. RIMES (French administrative letters) and the Bentham collection (19th-century English manuscript pages curated under the EU READ / tranScriptorium project) extend the corpus to multi-writer historical material; READ and the recurring ICFHR / ICDAR HTR competitions (2014, 2016, 2018, with follow-on tracks at ICDAR 2021 and 2023) supply the competition-grade gold and the Transkribus platform that hosts much of the archival evaluation pipeline. None of these corpora overlap meaningfully with the printed-document benchmarks surveyed in sections 2.1 through 2.7; writer variation, baseline skew, and ligature behaviour dominate the error budget instead of layout or table structure.</p>
 
@@ -760,7 +645,7 @@ h2, h3 { scroll-margin-top: 1em; }
 
 <p>Action item for the next dossier iteration: convert every "PENDING-PIN" / "PENDING-LICENSE" entry above into a verified commit hash + SPDX identifier, and add a contamination-audit column tied to each Parse-x dimension's gold corpus.</p>
 
-<h2 id="appendix-b-datasets-contamination-posture">Appendix B. Datasets &amp; Contamination Posture</h2>
+<h2 id="appendix-b-datasets-amp-contamination-posture">Appendix B. Datasets &amp; Contamination Posture</h2>
 
 <p>This appendix inventories every public and internal corpus that a Parse-x leaderboard cell could draw on, records what is known about its provenance and possible model-training overlap, and pins each to one or more of the framework's seven measurement dimensions (D-OCR, D-PARSE-INTENT, D-LAYOUT, D-BBOX, D-TABLE, D-DOWNSTREAM, D-COST-LATENCY) and two stratification overlays (D-DOC-QUALITY, D-LANG) <sup class="cite">[<a href="#ref-25">25</a>]</sup>. We then state the standing circularity rule on <code>results.zip</code> and close with the per-doc-type coverage-gap matrix.</p>
 
@@ -817,7 +702,7 @@ h2, h3 { scroll-margin-top: 1em; }
 
 <p>From <code>DOC-TYPE-GAPS.json</code> (2026-05-26) <sup class="cite">[<a href="#ref-128">128</a>]</sup>, counting Tier-1+2+3+4 doc types against the n ≥ 100 minimum: <strong>5 of 6 Tier-1 doc types currently have ZERO factory-measured cells</strong> (T-02 credit note, T-03 PO, T-04 packing slip, T-05 BoL, T-06 remittance; only T-01 invoice has measured cells, with 5 vendors on n=90–95). <strong>Tier-2 has zero measured cells across all four types</strong> (T-07 bank statement, T-08 cheque, T-09 pay stub, T-10 wire/ACH). <strong>Tier-3 has zero measured cells</strong>, and T-11 (10-Q/10-K) is structurally excluded from HyperAPI IDP's current doc-type set [doctypegaps2026, BLK-7]. <strong>Tier-4</strong> (T-14 insurance, T-15 loan) has neither corpus nor measured cells. Of the 16 framework doc types, <strong>14 currently have zero leaderboard cells</strong> and <strong>2</strong> (T-01 invoice and T-16 FUNSD-style forms via SAVIOR aggregation) have any measured presence. Summary for Parse-x: the leaderboard today is a single-doc-type (invoice) result with an OCR-panel aggregate over SAVIOR; cross-doc-type claims are unsupported until D2/D3 phases run.</p>
 
-<h2 id="appendix-c-vendor-api-pin-table">Appendix C, Vendor &amp; API Pin Table</h2>
+<h2 id="appendix-c-vendor-amp-api-pin-table">Appendix C, Vendor &amp; API Pin Table</h2>
 
 <p>This appendix pins the closed-source / hosted services in the Parse-x panel as of 2026-06-16. Where a vendor has shipped multiple GA snapshots in the past quarter, we list the snapshot our harness will pin; <code>PENDING-CONFIRMATION</code> flags entries where the public docs are ambiguous or where we have not yet executed a sandbox call to confirm the snapshot string.</p>
 
@@ -841,7 +726,7 @@ h2, h3 { scroll-margin-top: 1em; }
 
 <p>All OpenAI model calls in Parse-x (<code>gpt-4o</code>, <code>gpt-4o-mini</code>, <code>gpt-4.1</code>, <code>gpt-5</code>, <code>gpt-5.1</code>, <code>gpt-5.2</code>, <code>gpt-5.4</code> family, <code>o3</code>, <code>o3-mini</code>) route through <strong>Azure OpenAI Service</strong>, not the direct <code>api.openai.com</code> endpoint. This is a standing Hyperbots project preference, recorded in user memory <code>azure-openai-preferred</code> and reaffirmed in <code>openai-default-gpt-5-4-thinking</code> (current default = GPT-5.4 thinking mode) <sup class="cite">[<a href="#ref-148">148</a>]</sup>. Operational reasons: (i) Entra-ID auth and tenant-scoped data residency, (ii) committed-throughput PTUs for reproducible latency cells in D-COST-LATENCY, (iii) the Azure data-processing addendum the Hyperbots tenant has signed. Practically this means: model snapshot strings follow Azure's deployment-name convention, the API path is <code>/openai/deployments/{deployment}/responses?api-version=…</code>, and snapshot availability lags OpenAI direct by typically 1–6 weeks <sup class="cite">[<a href="#ref-136">136</a>]</sup>. Benchmark cells that name an OpenAI model implicitly mean "this snapshot, served via Azure", when an OpenAI snapshot is not yet on Azure we mark the cell <code>BLOCKED-AZURE-LAG</code> rather than fall back to direct OpenAI.</p>
 
-<h3 id="c2-known-boundaries-caveats">C.2, Known boundaries &amp; caveats</h3>
+<h3 id="c2-known-boundaries-amp-caveats">C.2, Known boundaries &amp; caveats</h3>
 
 <ul>
 <li><strong>Azure DI</strong> prebuilt-read covers Latin + CJK printed text but handwritten Chinese / Japanese / Korean fall back to print-trained models with degraded recall; handwritten Arabic is not supported in <code>prebuilt-read</code> GA <sup class="cite">[<a href="#ref-130">130</a>]</sup>. The <code>prebuilt-layout</code> table cell linking does not emit row/column spans for merged headers in all layouts, relevant to D-TABLE.</li>
@@ -857,7 +742,7 @@ h2, h3 { scroll-margin-top: 1em; }
 
 <p>Running parallel to the academic document-parsing literature surveyed above is a substantial industry literature on Intelligent Document Processing (IDP) that this review touches only where it overlaps the seven measurement dimensions. The two literatures share an architectural pattern (a parse stage that lifts pixels to a structured intermediate, followed by an extract stage that maps the intermediate to business fields), but differ sharply on evaluation discipline.</p>
 
-<p>The vendor pool typically named by analyst firms covers UiPath Document Understanding <sup class="cite">[<a href="#ref-172">172</a>]</sup>, Hyperscience Hypercell <sup class="cite">[<a href="#ref-175">175</a>]</sup>, Rossum (now Coupa) <sup class="cite">[<a href="#ref-176">176</a>]</sup>, ABBYY (FlexiCapture, Vantage), Microsoft 365 document-processing services (the rebrand of Syntex) <sup class="cite">[<a href="#ref-177">177</a>]</sup>, Google Document AI <sup class="cite">[<a href="#ref-174">174</a>]</sup>, AWS Textract <sup class="cite">[<a href="#ref-173">173</a>]</sup>, Indico, Kofax/Tungsten, and Automation Anywhere Document Automation. Analyst-firm taxonomies (Forrester Wave IDP, Gartner Magic Quadrant for IDP, Everest Group PEAK Matrix IDP, IDC MarketScape IDP) usually segment the field along three axes: (i) templated rules-and-zonal-OCR engines (the legacy ABBYY FlexiCapture lineage), (ii) ML-driven engines that train per-customer extraction models (Hyperscience, Rossum, Indico), and (iii) hybrid engines that bolt a pretrained transformer or, more recently, a vision-language model on top of a template fallback (UiPath DU, Microsoft, the hyperscaler services). The most recent vendor messaging (e.g., Hyperscience ORCA, UiPath generative extraction) collapses parse and extract into a single VLM call, which mirrors the end-to-end direction in the academic literature (Nougat, olmOCR, dots.ocr) but is marketed as a no-train default rather than as a fine-tuning recipe.</p>
+<p>The vendor pool typically named by analyst firms covers UiPath Document Understanding <sup class="cite">[<a href="#ref-172">172</a>]</sup>, Extend AI Parse 2.0 <sup class="cite">[<a href="#ref-188">188</a>]</sup> (a layout-first parsing API trained on 1M+ real-world pages, with its companion RealDoc-Bench <sup class="cite">[<a href="#ref-189">189</a>]</sup> benchmark of 1,500 real-world documents from healthcare, financial services, logistics and real estate that measures both layout accuracy and downstream agent performance), Hyperscience Hypercell <sup class="cite">[<a href="#ref-175">175</a>]</sup>, Rossum (now Coupa) <sup class="cite">[<a href="#ref-176">176</a>]</sup>, ABBYY (FlexiCapture, Vantage), Microsoft 365 document-processing services (the rebrand of Syntex) <sup class="cite">[<a href="#ref-177">177</a>]</sup>, Google Document AI <sup class="cite">[<a href="#ref-174">174</a>]</sup>, AWS Textract <sup class="cite">[<a href="#ref-173">173</a>]</sup>, Indico, Kofax/Tungsten, and Automation Anywhere Document Automation. A separate sub-class of invoice and receipt specialists, often grouped together by analyst firms, comprises Mindee <sup class="cite">[<a href="#ref-192">192</a>]</sup>, Veryfi <sup class="cite">[<a href="#ref-193">193</a>]</sup>, Affinda <sup class="cite">[<a href="#ref-194">194</a>]</sup>, and Klippa <sup class="cite">[<a href="#ref-195">195</a>]</sup>; these vendors publish their own field-level accuracy and per-page latency numbers but typically without the per-document score vectors or fine-tune-vs-zero-shot disclosure that the academic literature now expects. Analyst-firm taxonomies (Forrester Wave IDP, Gartner Magic Quadrant for IDP, Everest Group PEAK Matrix IDP, IDC MarketScape IDP) usually segment the field along three axes: (i) templated rules-and-zonal-OCR engines (the legacy ABBYY FlexiCapture lineage), (ii) ML-driven engines that train per-customer extraction models (Hyperscience, Rossum, Indico), and (iii) hybrid engines that bolt a pretrained transformer or, more recently, a vision-language model on top of a template fallback (UiPath DU, Microsoft, the hyperscaler services). The most recent vendor messaging (e.g., Hyperscience ORCA, UiPath generative extraction) collapses parse and extract into a single VLM call, which mirrors the end-to-end direction in the academic literature (Nougat, olmOCR, dots.ocr) but is marketed as a no-train default rather than as a fine-tuning recipe.</p>
 
 <p>Three substantive deltas separate this industrial literature from the academic prior art covered above. First, evaluation discipline is closed: vendor white papers report customer-pilot headline accuracy ('99.5% accuracy and 98% automation' is the canonical Hyperscience claim <sup class="cite">[<a href="#ref-175">175</a>]</sup>) without per-document score vectors, bootstrap CI95, or fine-tune-vs-zero-shot disclosure, and analyst-firm scoring is composite-vendor capability rather than per-document benchmark. Second, the document mix is enterprise-AP-centric (invoices, POs, remittances, claims) rather than the academic mix of arXiv PDFs, layout corpora (DocLayNet, PubLayNet), and table corpora (PubTabNet, FinTabNet), so cross-comparison with academic numbers is not apples-to-apples. Third, cost reporting is opaque: pricing is per-page or per-document, sometimes credit-bundled, and rarely normalized to '$/correct call' in the D-COST-LATENCY sense. This review therefore treats the industry literature as taxonomic context and a source of vendor pins (Appendix C), not as a substitute for the per-document, per-stratum benchmark cells the framework requires.</p>
 
@@ -868,13 +753,17 @@ h2, h3 { scroll-margin-top: 1em; }
 
 <h2 id="3-discussion-and-open-gates">3. Discussion and Open Gates</h2>
 
+<p>The discussion below is intentionally short; the substantive limitations of the framework, the reproducibility caveats, and the statistical-power floor are promoted to their own top-level Section 4 (Limitations) per NeurIPS-D&amp;B convention.</p>
+
+<h2 id="4-limitations">4. Limitations</h2>
+
 <p>Three patterns emerge across the seven dimensions and two overlays. First, <strong>per-document score vectors are absent everywhere except SAVIOR-Bench's internal pipeline</strong>, OCRBench v2, OmniDocBench, olmOCR-Bench, PubTabNet and DocLayNet all publish single aggregate numbers per model, so any rigorous bootstrap CI95 reporting on top of them requires either re-running the eval (with the attendant compute and decoding-pin honesty work) or explicit attestation. Second, <strong>fine-tune-vs-zero-shot disclosure is inconsistent in the published literature</strong>, a known SAVIOR-Bench complaint (R6) and a recurring source of misleading model-vs-model comparisons (e.g., a 2B fine-tuned model beating a 75B zero-shot model is structurally expected and should not be reported as a model-capability win). Third, <strong>parse-to-downstream lift (D-DOWNSTREAM) is underused in the parse-benchmark literature</strong>: prior art treats OCR / parse as an intrinsic-metric end-state, not as a stage feeding extract / RAG / classify pipelines, and the paired-bootstrap testing infrastructure imported from NLP <sup class="cite">[<a href="#ref-73">73</a>]</sup> and ASR (formalised for NLP by <sup class="cite">[<a href="#ref-164">164</a>]</sup>) and the RAG-evaluation lineage (<sup class="cite">[<a href="#ref-166">166</a>]</sup>) has not been carried over.</p>
 
 <p>The largest open gates blocking first-pass cell publication, in order of severity, are: (i) BLK-18, the SAVIOR-Bench 509-doc out7 corpus is not on disk, blocking WordRecall reconciliation against the attested 31-cell leaderboard; (ii) PENDING-MAXTOKEN, the uniform max_tokens=2048 ceiling truncates Chandra and Qwen on dense text-content / text-formatting splits at 8-10 out of 10 documents, producing 0.0 scores by truncation rather than by model capability; (iii) the model-lineage table (Appendix A) carries several PENDING-PIN entries that block the per-cell <code>pins.adapter_version</code> field from being populated; (iv) several Tier-1 document types in DOC-TYPE-GAPS still have zero measured cells across every framework dimension, a gap that no public benchmark fills.</p>
 
 <p>The framework's measurement discipline does not, by itself, resolve any of these gates; it makes them visible. This visibility, paired with a curated and rerunnable cell registry, informs the industrial release discipline that follows.</p>
 
-<h3 id="31-scope-limitations">3.1 Scope limitations</h3>
+<h3 id="41-scope-limitations">4.1 Scope limitations</h3>
 
 <p>This review deliberately scopes to the seven measurement dimensions named in §2 and treats four content surfaces as out of scope:</p>
 <ul>
@@ -895,7 +784,7 @@ h2, h3 { scroll-margin-top: 1em; }
 <li><strong>Long-document and multi-page handling</strong> (multi-page reading-order continuity, cross-page table stitching, full-10K-style finance documents). <sup class="cite">[<a href="#ref-165">165</a>]</sup> introduces hierarchical multi-page DocVQA; full multi-page parse-benchmark coverage is left to follow-on work.</li>
 </ul>
 
-<h3 id="32-reproducibility-caveats">3.2 Reproducibility caveats</h3>
+<h3 id="42-reproducibility-caveats">4.2 Reproducibility caveats</h3>
 
 <p>An external team cannot execute the framework end-to-end from this review alone. Specific blockers:</p>
 <ul>
@@ -908,17 +797,22 @@ h2, h3 { scroll-margin-top: 1em; }
 
 <p>The framework is therefore reproducible <em>in template</em> (decoding pins, metric definitions, cell schema) and partially reproducible in <em>substance</em> (Apache-2.0 ParseBench, OmniDocBench, FUNSD/CORD/SROIE, the foundational works in Appendix A) on public corpora alone.</p>
 
-<h3 id="33-statistical-floor">3.3 Statistical floor</h3>
+<h3 id="43-statistical-floor">4.3 Statistical floor</h3>
 
 <p>The first-pass sampled cells use n=10 per split. For a metric on [0,1] this implies an expected 2000-resample bootstrap CI95 half-width of approximately ±0.15, which can swamp engine-to-engine deltas of comparable magnitude (a published difference of, say, 0.10 PaIRS between two engines is not significant at n=10). No formal power analysis was performed. The framework's publish-gate (per-document score vectors plus bootstrap CI95) is consistent with the prevailing HELM-era discipline <sup class="cite">[<a href="#ref-161">161</a>]</sup>; widening n is the correct next step for headline cells.</p>
 
-<h3 id="34-evaluator-llm-bias-note">3.4 Evaluator-LLM bias note</h3>
+<h3 id="44-evaluator-llm-bias-note">4.4 Evaluator-LLM bias note</h3>
 
 <p>In D-DOWNSTREAM, the reference extractor (Qwen3.6-35B-A3B) is itself an LLM. This is structurally an LLM-as-judge setting and risks the judge biases catalogued in recent LLM-evaluation literature. The framework's countermeasure is the apples-to-apples constraint (same extractor, identical decoding pins across all upstream parsers), which controls relative ranking but does not eliminate absolute-scale bias.</p>
 
-<h3 id="35-cross-engine-fairness-note-apples-to-oranges">3.5 Cross-engine fairness note (apples-to-oranges)</h3>
+<h3 id="45-cross-engine-fairness-note-apples-to-oranges">4.5 Cross-engine fairness note (apples-to-oranges)</h3>
 
 <p>The framework's uniform decoding pin <code>max_tokens=2048</code> truncates Chandra and Qwen on dense text-content and text-formatting splits in 8 to 10 out of 10 documents. The content-metric cells for those engines under this pin are <strong>labeled apples-to-oranges</strong> and should not be read as engine-capability cells. PaIRS scores on the same documents remain valid because the metric measures matched-token geometry rather than transcript completeness.</p>
+
+<h2 id="5-broader-impact">5. Broader Impact</h2>
+
+<p>Document parsing sits upstream of two downstream surfaces with social consequences: business-process automation (invoice processing, contract intake, loan underwriting), where parse errors propagate to financial decisions; and digital archives / accessibility (scanning legal, medical, and historical records), where parse errors shape what is readable by downstream tools. The framework's per-document score vectors and apples-to-apples decoding pins are intended to surface systematic disparities, particularly across languages, document quality tiers, and document types that are over-represented in upstream training data. Two specific risks are noted. First, evaluation-set contamination: many of the surveyed VLMs were trained on web-scraped corpora that may overlap with the benchmarks they are evaluated on; Appendix B's contamination column flags known cases but cannot certify the closed-source frontier models. Second, evaluator-LLM bias (§4.4): when a downstream-task evaluator is itself an LLM (here, Qwen3.6-35B-A3B as the frozen extractor for D-DOWNSTREAM), the framework can rank engines reliably under the apples-to-apples constraint but cannot certify absolute capability. Users of the framework should report both the engine under test and the evaluator-LLM pin.</p>
+
 
 <h2 id="references">References</h2>
 
@@ -1263,6 +1157,14 @@ h2, h3 { scroll-margin-top: 1em; }
 <p class="ref" id="ref-185"><span class="refnum">[185]</span> Blecher, L. pix2tex / LaTeX-OCR: a ViT-encoder Transformer-decoder system that converts math-formula images into LaTeX. Open-source project. URL https://github.com/lukas-blecher/LaTeX-OCR</p>
 <p class="ref" id="ref-186"><span class="refnum">[186]</span> Harley, A. W., Ufkes, A., Derpanis, K. G. Evaluation of Deep Convolutional Nets for Document Image Classification and Retrieval. ICDAR 2015. arXiv:1502.07058. URL https://arxiv.org/abs/1502.07058</p>
 <p class="ref" id="ref-187"><span class="refnum">[187]</span> Kumar, J., Ye, P., Doermann, D. Structural similarity for document image classification and retrieval (Tobacco-3482 dataset, 3,482 documents across 10 classes drawn from the Truth Tobacco Industry Documents archive). 2014.</p>
-
-</body>
-</html>
+<p class="ref" id="ref-188"><span class="refnum">[188]</span> Extend AI. Parse 2.0 and RealDoc-Bench: SOTA layout-first document parsing. Product launch, 2026. URL https://www.extend.ai/resources/parse-2-and-realdocbench-launch</p>
+<p class="ref" id="ref-189"><span class="refnum">[189]</span> Extend AI. RealDoc-Bench: A Real-World Benchmark for Document Agents. 2026. 1,500 real-world documents across healthcare, financial services, logistics, real estate. URL https://www.extend.ai/resources/realdocbench</p>
+<p class="ref" id="ref-190"><span class="refnum">[190]</span> xAI. Grok 4 model family (Generalist, Heavy, Code). Released July 2025; Grok 4.3 beta April 2026 with native multimodal video and improved long-context reasoning; 256k context. URL https://x.ai/news/grok-4</p>
+<p class="ref" id="ref-191"><span class="refnum">[191]</span> Meta AI. The Llama 4 Herd: Scout (109B / 16 experts / 10M-token context), Maverick (400B / 128 experts / 1M-token context), Behemoth (~2T / 288B active, previewed). First Llama with native multimodality via early-fusion. Released April 2025. URL https://ai.meta.com/blog/llama-4-multimodal-intelligence/</p>
+<p class="ref" id="ref-192"><span class="refnum">[192]</span> Mindee. Document AI API platform; invoice, receipt, ID, custom-document extraction. Product site, accessed 2026-06-16. URL https://www.mindee.com/</p>
+<p class="ref" id="ref-193"><span class="refnum">[193]</span> Veryfi. Real-time invoice and receipt data extraction API (GDPR / HIPAA compliant). Accessed 2026-06-16. URL https://www.veryfi.com/</p>
+<p class="ref" id="ref-194"><span class="refnum">[194]</span> Affinda. AI document processing platform; invoice, receipt, resume, ID extraction. Accessed 2026-06-16. URL https://www.affinda.com/</p>
+<p class="ref" id="ref-195"><span class="refnum">[195]</span> Klippa. Document processing (financial documents, receipts, invoices); multilingual; affordable tier for SMBs. Accessed 2026-06-16. URL https://www.klippa.com/en/</p>
+<p class="ref" id="ref-196"><span class="refnum">[196]</span> Wang, Z. et al. Modeling Layout Reading Order as Ordering Relations for Visually-rich Document Understanding. EMNLP 2024. URL https://aclanthology.org/2024.emnlp-main.540/</p>
+<p class="ref" id="ref-197"><span class="refnum">[197]</span> Coquenet, D., Chatelain, C., Paquet, T. End-to-End Handwritten Document Recognition (LOER: Layout Ordering Error Rate). 2022. arXiv:2209.15362. URL https://arxiv.org/abs/2209.15362</p>
+</body></html>

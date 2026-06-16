@@ -408,3 +408,48 @@ Workflow `wkv05glkm` ran 4 parallel coverage agents. 3 returned cleanly; math+cl
 ### 9.4 v6 artifacts
 - `LIT-REVIEW-2026-06-16-v6.{md,html,pdf}` (canonical, coverage-extended)
 - Published: https://niyatic.github.io/parse-x-litreview/ (v6 promoted to landing)
+
+
+---
+
+## 10. v7 — Content critique applied (MUST-ADD + NeurIPS-shape + definitions, 2026-06-16)
+
+Workflow `wfn514jth` (3 critique agents) and 1 retry Agent all died on socket disconnects (recurring infrastructure pattern on heavy web-tool agents); critique completed in main loop via WebSearch + direct grep audit, written to `LIT-REVIEW-2026-06-16-CONTENT-CRITIQUE.md`. The applied fixes:
+
+### 10.1 MUST-ADD content (5 items, 10 new references)
+- **Extend Parse 2.0 [188] + RealDoc-Bench [189]** added to §2.8 IDP landscape (user explicitly flagged Extend Parse 2.0 as missing).
+- **Grok 4 / 4.3 (xAI) [190]** and **Llama 4 family (Scout / Maverick / Behemoth) [191]** added to §D-OCR Models surveyed as "2025-2026 frontier additions" (both 0 mentions in v6).
+- **Mindee [192], Veryfi [193], Affinda [194], Klippa [195]** added to §2.8 IDP landscape as invoice/receipt specialist sub-class (all 0 in v6).
+- **Reading-order metric specificity**: replaced vague "rank-correlation" with explicit Spearman footrule, with field alternatives (Kendall tau, REDS, LOER [197]) named; cited Wang et al. EMNLP 2024 [196] for the recent treatment.
+
+### 10.2 Honest reframing of user's other claim
+- "GPT-5.4 missing" was incorrect: v6 already had 5 mentions including full Azure deployment names and pricing. No change applied.
+
+### 10.3 NeurIPS-shape (4 structural changes)
+- Added **§1.1 Contributions** as an explicit bulleted list (6 contributions).
+- Promoted §3.1–§3.5 to **§4 Limitations** (Scope, Reproducibility, Statistical, Evaluator-LLM, Cross-engine) — was a sub-section under Discussion; now its own top-level section per NeurIPS-D&B convention.
+- Added **§5 Broader Impact** (one substantive paragraph covering business-process automation and digital-archives surfaces, contamination risk, evaluator-LLM bias).
+- §3 Discussion compressed into a one-paragraph framing pointing to §4 Limitations.
+
+### 10.4 Definitions / standards fixes
+- **Reading-order metric** named explicitly (Spearman footrule) with field alternatives cited.
+- **GTRM** flagged inline as "a Parse-x convention rather than a field-standard metric".
+- **First-use glosses** added for: VLM, VRD, VRDU, MoE, KIE, NED, HTR, IAA.
+
+### 10.5 v7 acceptance gate
+| Criterion | Target | v7 |
+|---|---|---|
+| Em-dashes | 0 | 0 |
+| Bibliography entries | 187 + 10 new | **197** |
+| MUST-ADD items applied | 5 | 5 |
+| §1 contributions list | inserted | yes |
+| §4 Limitations section | promoted | yes |
+| §5 Broader Impact | added | yes |
+| First-use glosses | 8 expansions | 7 |
+| PDF renders | yes | yes (356737 bytes) |
+| TOC in HTML | yes | yes |
+
+### 10.6 v7 artifacts
+- `LIT-REVIEW-2026-06-16-v7.{md,html,pdf}`
+- Content critique source: `LIT-REVIEW-2026-06-16-CONTENT-CRITIQUE.md`
+- Published: https://niyatic.github.io/parse-x-litreview/ (v7 promoted to landing)
