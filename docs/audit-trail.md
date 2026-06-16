@@ -453,3 +453,57 @@ Workflow `wfn514jth` (3 critique agents) and 1 retry Agent all died on socket di
 - `LIT-REVIEW-2026-06-16-v7.{md,html,pdf}`
 - Content critique source: `LIT-REVIEW-2026-06-16-CONTENT-CRITIQUE.md`
 - Published: https://niyatic.github.io/parse-x-litreview/ (v7 promoted to landing)
+
+
+---
+
+## 11. v8 — AAAI/NeurIPS-style academic copy-edit pass (2026-06-16)
+
+Workflow `wgei6yhl6` ran 4 parallel copy-edit agents on disjoint sections of v7 (no web tools used, which eliminated the recurring socket-disconnect issue). All 4 completed cleanly in 82 seconds, returning 136 verbatim (old_snippet, new_snippet, reason) replacements.
+
+### 11.1 Edit categorisation (top reasons)
+
+-   9 edits · first-person-plural overuse
+-   8 edits · colloquialism
+-   7 edits · informal phrasing
+-   7 edits · comma splice
+-   6 edits · filler removal
+-   5 edits · promotional adjective
+-   5 edits · informal connective
+-   5 edits · heading punctuation consistenc
+-   3 edits · clarity
+-   3 edits · fragment to full sentence
+-   3 edits · informal verb
+-   3 edits · comma splice and first-person-
+
+### 11.2 Application stats
+- Applied: **136** of 136
+- Non-unique fallback (first occurrence used): 0
+- Not-found: 0
+- Em-dashes after re-sweep: 0
+
+### 11.3 Style discipline applied
+- Filler removal: "in order to" → "to"; "due to the fact that" → "because"; "make use of" → "use"; "a number of" → "several"
+- Formal register: contractions removed, colloquialisms ("basically", "essentially", "really") removed, promotional adjectives ("powerful", "robust") removed
+- Connectives: "so" / "also" at sentence start replaced with "consequently" / "furthermore" / "however"
+- First-person plural: trimmed in methodology/dimension prose, retained in §1 Introduction and §3-5 Discussion/Limitations/Broader Impact
+- Comma splices fixed (independent clauses joined by ", " → ". " or "; ")
+- Parallel grammar in §1.1 Contributions bullets and "Models surveyed" lists
+- Hedge phrases added where claims exceeded cited evidence
+- Reference formatting: "[24], [25]" → "[24, 25]"; whitespace normalised
+- Numerals for 11+ as per academic convention
+
+### 11.4 v8 acceptance gate
+| Criterion | v8 |
+|---|---|
+| Em-dashes | 0 |
+| Contractions | none in body |
+| Promotional adjectives ("powerful" / "robust" / "best-in-class") | none uncited |
+| First-person plural in dimension prose | trimmed |
+| Reference format | uniform [N, M] / [N]-[M] |
+| PDF renders | yes (358810 bytes) |
+| TOC entries | 65 |
+
+### 11.5 v8 artifacts
+- `LIT-REVIEW-2026-06-16-v8.{md,html,pdf}`
+- Published: https://niyatic.github.io/parse-x-litreview/ (v8 promoted to landing)
