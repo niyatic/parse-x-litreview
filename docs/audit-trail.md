@@ -374,3 +374,37 @@ D-BBOX intro now opens with a "*Relation to D-LAYOUT*" sentence acknowledging th
 - `LIT-REVIEW-2026-06-16-v5.{md,html,pdf}` (canonical, critique-applied)
 - Published: https://niyatic.github.io/parse-x-litreview/ (v5 is now the index target)
 - This audit trail: `LIT-REVIEW-2026-06-16-REVIEW.md`
+
+
+---
+
+## 9. v6 — Coverage extension (4 dedicated agents, 2026-06-16)
+
+CEO: "Liu 2024 table survey, Ding 2025, IDP industry literature, plus handwriting/math/classification surveys themselves not added — create 4 subagents for these and add these".
+
+Workflow `wkv05glkm` ran 4 parallel coverage agents. 3 returned cleanly; math+classification agent died on socket disconnect mid-flight (transcript salvage returned nothing). Re-ran the math+classification agent as a single bounded Agent call (4 min, 34k tokens) which produced clean output. All 4 results then mechanically applied to v5 → v6.
+
+### 9.1 Coverage added (4 mini-sections + 21 new references)
+
+- **table_vlm_surveys** → ### 2.5.1 Survey landscape (table recognition + VLM-era document AI) | refs: Liu2024TableSurvey, Ding2025MLLMSurvey, Ding2024VRDSurvey, Somvanshi2024TabularSurvey, Barboule2025VRDQASurvey
+- **idp_industry** → ### 2.8 Industrial IDP landscape (vendor and analyst literature) | refs: UiPathDU2026, AWSTextract2026, GoogleDocAI2026, Hyperscience2026, Rossum2026, MSSyntex2026
+- **handwriting** → ### 2.8 Handwritten document recognition (coverage extension) | refs: MartiBunke2002IAM, Li2021TrOCR, Garrido2025HTRSurvey, Crosilla2025LLMHTR, Retsinas2024HTRBestPractices
+- **math_classification** → ### 2.9 Adjacent surfaces (math formula extraction + document classification) | refs: Im2Latex2017, CROHME2019, LaTeXOCRpix2tex, RVLCDIP2015, Tobacco3482
+
+### 9.2 Bibliography expansion
+- v5 ended at [166] + sub-entry [76b].
+- v6 appends [167]-[187] = 21 new entries.
+- All new entries WebFetch-verified by their respective agents.
+
+### 9.3 Acceptance gate
+| Criterion | Target | v6 |
+|---|---|---|
+| Em-dashes | 0 | 0 |
+| Mini-sections inserted | 4 | 4 |
+| Inline edits applied | best-effort | 4 applied / 0 missed |
+| New refs verified | each WebFetch-confirmed | 21 added |
+| PDF renders | yes | yes (341056 bytes) |
+
+### 9.4 v6 artifacts
+- `LIT-REVIEW-2026-06-16-v6.{md,html,pdf}` (canonical, coverage-extended)
+- Published: https://niyatic.github.io/parse-x-litreview/ (v6 promoted to landing)
