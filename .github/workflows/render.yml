@@ -1,0 +1,46 @@
+name: render
+
+on:
+  push:
+    paths:
+      - 'docs/parse-x-litreview.md'
+      - 'tools/**'
+      - '.github/workflows/render.yml'
+  workflow_dispatch: {}
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: install weasyprint deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpango-1.0-0 libpangoft2-1.0-0 libcairo2 libgdk-pixbuf2.0-0 libffi-dev
+          pip install --quiet weasyprint
+      - name: render html+pdf
+        run: |
+          set -euo pipefail
+          MD=docs/parse-x-litreview.md
+          HTML=docs/parse-x-litreview.html
+          PDF=docs/parse-x-litreview.pdf
+          python3 tools/render_md_to_html.py "$MD" "$HTML"
+          python3 tools/inject_toc.py "$HTML" "$HTML"
+          weasyprint "$HTML" "$PDF"
+          ls -la "$HTML" "$PDF"
+      - name: commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/parse-x-litreview.html docs/parse-x-litreview.pdf || true
+          if git diff --cached --quiet; then
+            echo "no render changes"
+          else
+            git commit -m "ci: auto-render html+pdf from parse-x-litreview.md"
+            git push
+          fi

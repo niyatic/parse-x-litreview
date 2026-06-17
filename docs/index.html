@@ -4,6 +4,18 @@
 <meta charset="utf-8">
 <title>Parse-x: A Literature Review for the Deep Benchmark Framework</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta property="og:title" content="Parse-x: A Literature Review for the Deep Benchmark Framework">
+<meta property="og:description" content="NeurIPS-style survey of document-parsing prior art across 9 measurement axes; 197 references, 8 audited revisions, full audit trail published.">
+<meta property="og:url" content="https://niyatic.github.io/parse-x-litreview/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="niyatic.github.io">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Parse-x: A Literature Review for the Deep Benchmark Framework">
+<meta name="twitter:description" content="NeurIPS-style survey of document-parsing prior art across 9 measurement axes; 197 references; 8 audited revisions.">
+<meta name="description" content="A NeurIPS-style literature review surveying prior art for the nine measurement axes of the Parse-x Deep Benchmark Framework. Researcher-not-advocate stance, 197 references, 8 audited revisions with full audit trail.">
+<meta name="author" content="Hyperbots Research / hyperapi-parse-x-research">
+<link rel="canonical" href="https://niyatic.github.io/parse-x-litreview/">
+
 <style>
 body { font-family: 'Latin Modern Roman', 'Computer Modern', 'STIX Two Text', Georgia, serif; max-width: 760px; margin: 2em auto; padding: 0 1em; color: #111; line-height: 1.5; }
 h1 { font-size: 1.6em; margin-bottom: 0.2em; }
@@ -23,7 +35,7 @@ td { border-bottom: 0.5px solid #ddd; padding: 4px 6px; }
 <body>
 
 <h1>Parse-x: A Literature Review for the Deep Benchmark Framework</h1>
-<p class="byline">Hyperbots Research, hyperapi-parse-x-research team. 2026-06-16. Version 8 (AAAI/NeurIPS academic copy-edit).</p>
+<p class="byline">Hyperbots Research, hyperapi-parse-x-research team. 2026-06-16. Version 9 (NICE-TO-ADD + first-pass measured baseline).</p>
 
 <div class="abstract">
 Document parsing has bifurcated into two literatures with little overlap: a multimodal-LLM benchmark line (OCRBench v2, OmniDocBench, olmOCR-Bench) that reports single aggregate numbers per model, and an in-house or release-discipline benchmark line (SAVIOR-Bench; the Apache-2.0 ParseBench corpus from LlamaIndex re-used with project-specific evaluation discipline) that exposes per-document score vectors, multilingual-quality stratification, and downstream-task lift. This review surveys the prior art for each of the seven measurement dimensions defined by the Parse-x Deep Benchmark Framework (D-OCR, D-PARSE-INTENT, D-LAYOUT, D-BBOX, D-TABLE, D-DOWNSTREAM, D-COST-LATENCY), together with the two stratification overlays (D-DOC-QUALITY and D-LANG) that cross-cut them. The review is researcher-not-advocate: prior work is named for what it measures and what it does not measure, no winner is selected in advance, and the majority of quantitative claims are anchored to numbered references with the small number that remain inline-flagged as unverified.
@@ -31,13 +43,13 @@ Document parsing has bifurcated into two literatures with little overlap: a mult
 
 <h2>Read</h2>
 <div class="row">
-<a href="v8.html">HTML (v8, current)</a>
+<a href="v9.html">HTML (v9, current)</a>
 <a href="parse-x-litreview.pdf">PDF (v5, current)</a>
-<a href="parse-x-litreview.md">Markdown source (v8)</a>
+<a href="parse-x-litreview.md">Markdown source (v9)</a>
 </div>
 
 <h2>Audit trail</h2>
-<p>The review went through eight independent revision passes. Each version is preserved for the trail.</p>
+<p>The review went through nine independent revision passes. Each version is preserved for the trail.</p>
 <table>
 <thead><tr><th>Version</th><th>What changed</th><th>HTML</th><th>PDF</th></tr></thead>
 <tbody>
@@ -48,7 +60,8 @@ Document parsing has bifurcated into two literatures with little overlap: a mult
 <tr><td>v5</td><td><b>Senior-academic critique applied</b>: MECE re-framing (7 dimensions + 2 stratification overlays); contribution claim repositioned as industrial framework + dataset registry (cites HELM, BIG-bench, DUE, Cui 2021, Subramani 2020); D-BBOX/D-LAYOUT overlap noted; D-DOWNSTREAM novelty softened with Dror 2018 + Ragas 2024 prior art; new §3 subsections: Scope limitations, Reproducibility caveats, Statistical floor, Evaluator-LLM bias, Cross-engine fairness; 8 new references [159]-[166]</td><td><a href="v5.html">html</a></td><td><a href="v5.pdf">pdf</a></td></tr>
 <tr><td>v6</td><td><b>Coverage extension</b> (4 dedicated subagents): table-recognition + VLM-era document-AI surveys (Shi 2023; Ding 2024/2025; Barboule 2025; Somvanshi 2024); industrial IDP landscape (UiPath / Hyperscience / Rossum / ABBYY / Microsoft 365 / Google Document AI / AWS Textract); handwritten document recognition (IAM, TrOCR, 2024-25 HTR surveys); math formula extraction (Im2Latex, CROHME, LaTeX-OCR) + document classification (RVL-CDIP, Tobacco-3482). 4 new mini-sections (§2.5.1, §2.8, §2.9, §2.10), 21 new references [167]-[187]</td><td><a href="v6.html">html</a></td><td><a href="v6.pdf">pdf</a></td></tr>
 <tr><td>v7</td><td><b>Content critique applied</b>: 5 MUST-ADD items (Extend Parse 2.0 + RealDoc-Bench [188][189]; xAI Grok 4/4.3 [190]; Meta Llama 4 Scout/Maverick [191]; invoice IDPs Mindee/Veryfi/Affinda/Klippa [192-195]; reading-order metric named explicitly with Wang 2024 [196] + Coquenet LOER [197]). NeurIPS-shape: §1.1 Contributions list, §4 Limitations promoted from §3, §5 Broader Impact added. Definitions: GTRM flagged as project composite; 7 acronyms glossed on first use (VLM, VRD, MoE, KIE, NED, HTR, IAA)</td><td><a href="v7.html">html</a></td><td><a href="v7.pdf">pdf</a></td></tr>
-<tr><td><b>v8</b></td><td><b>AAAI / NeurIPS-style academic copy-edit</b>: 4 parallel agents returned 136 verbatim (old, new) replacements across abstract, dimensions, appendices, discussion. Top categories: first-person-plural overuse, colloquialisms, informal phrasing, comma splices, filler removal, promotional adjectives, informal connectives, heading punctuation. Reference formatting harmonised to [N, M] / [N]-[M]. No content additions in this pass</td><td><a href="v8.html">html</a></td><td><a href="v8.pdf">pdf</a></td></tr>
+<tr><td>v8</td><td><b>AAAI / NeurIPS-style academic copy-edit</b>: 4 parallel agents returned 136 verbatim (old, new) replacements across abstract, dimensions, appendices, discussion. Top categories: first-person-plural overuse, colloquialisms, informal phrasing, comma splices, filler removal, promotional adjectives, informal connectives, heading punctuation. Reference formatting harmonised to [N, M] / [N]-[M]. No content additions in this pass</td><td><a href="v8.html">html</a></td><td><a href="v8.pdf">pdf</a></td></tr>
+<tr><td><b>v9</b></td><td><b>NICE-TO-ADD coverage</b> (Ocrolus, Nanonets, Sensible, Phi-4-multimodal, Adobe AI Assistant, Mistral Magistral + Devstral, GLM-4.5, DocBank + ReadingBank, TEDS-S/TEDS-C split, ANLS metric: 12 new references [198]-[209]) and <b>new section 2.11 First-pass measured baseline</b> presenting the PaIRS panel and F-B suite n=10 cells with binding caveats (CI95 +/- 0.15; PaIRS internal-only; max_tokens=2048 apples-to-oranges flag). Citation cleanups [6] PaddleOCR-VL-1.5 arXiv ID restored after verification; [136] Azure changelog footnote rephrased</td><td><a href="v9.html">html</a></td><td><a href="v9.pdf">pdf</a></td></tr>
 </tbody>
 </table>
 
@@ -59,7 +72,7 @@ Document parsing has bifurcated into two literatures with little overlap: a mult
 <p>This review pairs with the Parse-x Deep Benchmark Framework spec (PARSE-DEEP-BENCHMARK-FRAMEWORK-2026-05-27), which defines the seven measurement dimensions, the two stratification overlays, the sixteen-document-type taxonomy, and the publish-gate discipline. The framework spec is currently an internal artifact; this review can be read standalone and references the framework by name.</p>
 
 <h2>Citation discipline</h2>
-<p>Every quantitative claim in v5 carries a numbered reference (197 numbered references plus 1 sub-entry [76b]). References were independently verified against arXiv abstract pages, HuggingFace model cards, GitHub READMEs, and conference pages across four revision passes.</p>
+<p>Every quantitative claim in v5 carries a numbered reference (209 numbered references plus 1 sub-entry [76b]). References were independently verified against arXiv abstract pages, HuggingFace model cards, GitHub READMEs, and conference pages across four revision passes.</p>
 
 <p class="muted">Generated 2026-06-16. Source: <a href="https://github.com/niyatic/parse-x-litreview">github.com/niyatic/parse-x-litreview</a>.</p>
 

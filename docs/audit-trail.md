@@ -507,3 +507,38 @@ Workflow `wgei6yhl6` ran 4 parallel copy-edit agents on disjoint sections of v7 
 ### 11.5 v8 artifacts
 - `LIT-REVIEW-2026-06-16-v8.{md,html,pdf}`
 - Published: https://niyatic.github.io/parse-x-litreview/ (v8 promoted to landing)
+
+
+---
+
+## 12. v9 — NICE-TO-ADD coverage + first-pass measured baseline (2026-06-16, overnight run)
+
+CEO directive: "run overnight; figure it out". Workflow `w0izy8l8z` ran 2 parallel agents (NICE-TO-ADD coverage + §2.11 measured cells). Both completed cleanly (~3.5 min wall, 105k tokens, 29 tool uses).
+
+### 12.1 NICE-TO-ADD applied (12 new refs + 10 inline insertions)
+
+- **Ocrolus / Nanonets / Sensible** (App C / §2.8 IDP) [198, 199, 200]
+- **Phi-4-multimodal** (Microsoft, 5.6B, OCRBench 84.4, DocVQA 93.2) [201] in §D-OCR
+- **Adobe Acrobat AI Assistant** [202] in App C
+- **Mistral Magistral + Devstral** (2025-2026 specialists) [203, 204] in §D-PARSE-INTENT
+- **GLM-4.5** (Z.ai foundation, 355B / 32B-A) [205] in §D-OCR
+- **DocBank** [206] and **ReadingBank** [207] in §D-LAYOUT
+- **TEDS-S vs TEDS-C** split note in §D-TABLE; canonical PubTabNet / Zhong 2020 [208] cited
+- **ANLS** metric note in OCRBench v2 + DocVQA contexts; Mathew et al. DocVQA [209] cited
+
+### 12.2 §2.11 First-pass measured baseline inserted
+A new subsection after Appendix C presents the in-house F-B numbers as a *preliminary* measured baseline, with three binding caveats: n=10 → ±0.15 CI95 half-width; PaIRS is private-internal (external readers cannot reproduce); max_tokens=2048 truncation makes Chandra/Qwen content-metric cells apples-to-oranges. Tables for PaIRS panel (Chandra 0.6472 > Qwen 0.4422 > Tesseract 0.3639 > HyperAPI parse 0.2907) and F-B suite (layout, text_content, text_formatting cells) included verbatim from DOSSIER §2.4 / §2.5. Internal DH-001 / dataset_95 numbers explicitly NOT externalized.
+
+### 12.3 Acceptance gate
+| Criterion | v9 |
+|---|---|
+| Em-dashes | 0 |
+| Bibliography entries | 197 + 12 new = **209** + [76b] |
+| §2.11 measured baseline | inserted with apples-to-oranges flag |
+| PDF renders | yes (376105 bytes) |
+| TOC entries | 66 |
+| Internal data externalized | none (DH-001 / dataset_95 stayed internal) |
+
+### 12.4 v9 artifacts
+- `LIT-REVIEW-2026-06-16-v9.{md,html,pdf}`
+- Published: https://niyatic.github.io/parse-x-litreview/ (v9 promoted to landing)
