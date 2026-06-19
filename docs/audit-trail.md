@@ -22,7 +22,6 @@ Audit run: 2026-06-16. Method: 8-agent parallel workflow (`wp4l6q2l7`, 462k toke
 - Tone rewrites applied: **30** (advocacy, conversational, first-person-plural overuse)
 - Contractions found and fixed: **1** (Doesn't → Does not)
 
-
 ### Citation cross-check (154 references, 4-batch fan-out, 144 external + 10 internal)
 | Verdict | Count | Action |
 |---|---|---|
@@ -31,7 +30,6 @@ Audit run: 2026-06-16. Method: 8-agent parallel workflow (`wp4l6q2l7`, 462k toke
 | METADATA-MISMATCH | 12 | bibliography line replaced with corrected text (12 of 12 applied) |
 | INACCESSIBLE | 15 | tagged `[unverified; URL inaccessible at audit time]` |
 | NOT-FOUND | 3 | tagged `[PENDING-VERIFICATION; URL/ID not found]` |
-
 
 ### 2.3 Targeted reviewer fixes applied
 - D-DOWNSTREAM "methodologically novel for parse benchmarks" → "underused in the parse-benchmark literature, though established in ASR and MT [73]" (softens overclaim flagged by ICML reviewer).
@@ -45,7 +43,7 @@ The ICML reviewer's #1 major issue ("two parallel citation systems coexist; name
 
 ## 3. Deferred reviewer findings (judgment-call, not auto-applied)
 
-These require human or follow-up review:
+These require human or follow-up review
 1. **Heavy duplication of FUNSD / CORD / SROIE / SAVIOR re-summaries across dimension sections** (ICML major #5/#6, CTO multiple). Recommendation: consolidate per-corpus descriptors into Appendix B.1; cite the appendix in §2 with only dimension-relevant deltas.
 2. **Chandra description repeated across D-LAYOUT / D-BBOX / D-TABLE / Appendix A** with near-identical PaIRS variance figures. Recommendation: single canonical paragraph in Appendix A; one-sentence cross-references elsewhere.
 3. **Missing foundational works**: LayoutXLM (Xu et al., 2021), UDOP (Tang et al., CVPR 2023), TILT (Powalski et al.), Zhang–Shasha tree-edit-distance original. Recommendation: add ~4 new references and cite them where currently lacking.
@@ -62,23 +60,23 @@ These require human or follow-up review:
 
 **Major issues (9):**
 1. *References / throughout (e.g., §D-TABLE [parsebench2026, framework2026, grits2023, tabular-survey2026]; §D-COST-LATENCY [helm2022, helmdocs2026, mlperf51-2025, mlperfv6-2026, bentomlmetrics2026, gmicloud2026, artificialanalysis2026, parslicost2025, ofoxocr2026, mistralocr2025, docaicost2026, pubtables1m2022])* — Two parallel citation systems coexist — numbered [1]-[154] and unresolved name-year keys like [parsebench2026]. The name-year keys are never defined in the reference list, so a large fraction of D-TABLE and D-COST-LATENCY claims are effectively uncited. This is a hard blocker for a venue submission.
-   - Fix: Do a global pass converting every name-year key to its numbered reference (e.g., [parsebench2026]→[49], [grits2023]→[47], [helm2022]→[149], [mlperf51-2025]→[150], [mlperfv6-2026]→[151], [pubtables1m2022]→[50], etc.). Verify each newly-mapped citation actually supports the adjacent claim.
+ - Fix: Do a global pass converting every name-year key to its numbered reference (e.g., [parsebench2026]→[49], [grits2023]→[47], [helm2022]→[149], [mlperf51-2025]→[150], [mlperfv6-2026]→[151], [pubtables1m2022]→[50], etc.). Verify each newly-mapped citation actually supports the adjacent claim.
 2. *§D-DOWNSTREAM, intro paragraph and Gaps #1* — Claim that parse-lift with a frozen extractor is 'methodologically novel for parse benchmarks' is overstated. The dimension is a direct port of the WER→downstream-NLU pattern (van Strien [80], Chiron [81]) and the paired-bootstrap from Koehn [73], both cited in the same section. 'Novel' should be 'underused in the parse-benchmark literature' at most.
-   - Fix: Replace 'methodologically novel for parse benchmarks' with 'an established pattern in ASR/MT (Koehn 2004; van Strien 2020) that has not been adopted as a standard primary metric in the parse-benchmark literature.' Remove the 'closes that inference gap by measuring it' framing or qualify with prior-art acknowledgement.
+ - Fix: Replace 'methodologically novel for parse benchmarks' with 'an established pattern in ASR/MT (Koehn 2004; van Strien 2020) that has not been adopted as a standard primary metric in the parse-benchmark literature.' Remove the 'closes that inference gap by measuring it' framing or qualify with prior-art acknowledgement.
 3. *§D-OCR Prior benchmarks (OCRBench v2) and Appendix B [125] vs §D-LANG [3]* — OCRBench v2 is described inconsistently: §D-OCR says '10,000 human-verified QA pairs across 23 tasks and 31 scenarios'; §D-LANG says '10,000 human-verified QA pairs across 31 scenarios'; Appendix B says '10k+ instances / 31 task types / 9 scenarios'. Also reference [3] (Fu et al.) and [125] (Liu et al.) cite the same arXiv:2501.00321 under different first authors — only one can be right.
-   - Fix: Pick canonical counts (tasks vs scenarios) from the paper and use them in all three places. Resolve the first-author discrepancy ([3] vs [125]) — these should be a single reference, deduplicated.
+ - Fix: Pick canonical counts (tasks vs scenarios) from the paper and use them in all three places. Resolve the first-author discrepancy ([3] vs [125]) — these should be a single reference, deduplicated.
 4. *§D-PARSE-INTENT 'Prior benchmarks' bullet on CORD; §D-DOWNSTREAM 'Intrinsic KIE leaderboards'* — LayoutLMv3 numbers conflict and are surprising. §D-PARSE-INTENT says 'LayoutLMv3-large reports 97.46 F1' on CORD; §D-DOWNSTREAM repeats 97.46 on CORD and adds 'LayoutLM-large 95.2 on SROIE'. Published LayoutLMv3 paper reports CORD F1 ~96–97 depending on split; '97.46' is not a number I can verify from [12]/[76]. Risks an unsupported quantitative claim.
-   - Fix: Re-verify the 97.46 number against the LayoutLMv3 paper (arXiv:2204.08387) Table 4/5 and either correct it or add a more precise citation (which table, which split). Same for the SROIE 95.2 figure.
+ - Fix: Re-verify the 97.46 number against the LayoutLMv3 paper (arXiv:2204.08387) Table 4/5 and either correct it or add a more precise citation (which table, which split). Same for the SROIE 95.2 figure.
 5. *§D-TABLE 'Models surveyed' / 'Prior benchmarks' and §D-LAYOUT 'Models surveyed' and §D-BBOX 'Models surveyed'* — Heavy duplication and near-verbatim repetition of the Chandra PaIRS variance figures (0.2614–0.9996 / 0.26–0.9996) and the Chandra native-bbox HTML example across at least three dimension sections. Reads as 12 separate essays that didn't talk to each other.
-   - Fix: Move the Chandra description (architecture + native-bbox emission + PaIRS variance) to a single canonical paragraph (Appendix A or §D-BBOX), and cross-reference from the other dimensions in one sentence.
+ - Fix: Move the Chandra description (architecture + native-bbox emission + PaIRS variance) to a single canonical paragraph (Appendix A or §D-BBOX), and cross-reference from the other dimensions in one sentence.
 6. *§D-PARSE-INTENT bullets (FUNSD/CORD/SROIE/DocILE/Kleister) vs §D-DOWNSTREAM Prior benchmarks vs Appendix B.1* — FUNSD, CORD, SROIE, Kleister, DocILE, and DocVQA are re-summarized with full n/metric blurbs in three places, with slightly different counts each time (e.g., SROIE '626 train / 347 test' vs '973 receipts' in App B). This both pads the document and exposes inconsistencies.
-   - Fix: Consolidate per-corpus descriptors into Appendix B.1 once; in §2 dimension sections, cite the appendix row and give only the *delta* relevant to that dimension. Reconcile the SROIE n (973 = 626+347 — say so).
+ - Fix: Consolidate per-corpus descriptors into Appendix B.1 once; in §2 dimension sections, cite the appendix row and give only the *delta* relevant to that dimension. Reconcile the SROIE n (973 = 626+347 — say so).
 7. *§3 Discussion, paragraph 1 ('parse-to-downstream lift is methodologically new')* — The Discussion slips from researcher-stance into mild advocacy by labeling D-DOWNSTREAM 'methodologically new for parse benchmarks' (echoing the D-DOWNSTREAM section's overstatement). It also frames the three patterns as if the framework uniquely solves them without acknowledging that the absence of per-doc vectors in OmniDocBench/OCRBench is largely a publication-norm issue, not an unsolvable measurement problem.
-   - Fix: Soften to 'underused in the parse-benchmark literature'. Add one sentence acknowledging that re-running these benchmarks with per-doc vectors is mechanically possible for any group with compute, not gated by framework adoption.
+ - Fix: Soften to 'underused in the parse-benchmark literature'. Add one sentence acknowledging that re-running these benchmarks with per-doc vectors is mechanically possible for any group with compute, not gated by framework adoption.
 8. *§D-LAYOUT 'Gaps relative to the framework' #1 ('first framework to combine ... on the same gold corpus')* — 'First framework to combine layout_element_accuracy + reading_order_accuracy + PaIRS on the same gold corpus' is a strong novelty claim, but PaIRS itself is vendored from hyprbots/vlm_ocr (an internal repo) — the claim is essentially 'we're the first to combine these because we invented one of the three.' This is circular novelty.
-   - Fix: Reframe as 'combines two public metrics with an internal PaIRS score; we are not aware of a public benchmark that scores all three jointly' and note PaIRS provenance + lack of external validation explicitly.
+ - Fix: Reframe as 'combines two public metrics with an internal PaIRS score; we are not aware of a public benchmark that scores all three jointly' and note PaIRS provenance + lack of external validation explicitly.
 9. *Citation balance — missing foundational works* — Several obvious foundational citations are missing while internal artifacts [1],[10],[11],[25],[34],[35],[51] are reused dozens of times as primary support. Missing: LayoutLM v1/v2 (Xu et al., the predecessor to v3 cited heavily); Donut original ECCV cite is [14] but its dependency LayoutXLM is not cited under D-LANG; UDOP (Tang et al., CVPR 2023) is absent despite being a primary unified doc-understanding baseline; TILT (Powalski et al.) and StrucTexT are absent from D-PARSE-INTENT; the original TEDS paper [45] is cited but tree-edit-distance origin (Zhang–Shasha) is referenced only in §D-TABLE without citation.
-   - Fix: Add LayoutXLM (Xu et al., 2021) to D-LANG; add UDOP and TILT to D-PARSE-INTENT/D-LAYOUT prior art; add a Zhang–Shasha citation where invoked; reduce reliance on internal [1]/[10]/[25]/[34]/[35]/[51] by attributing dimension definitions to them once and not re-citing them per paragraph.
+ - Fix: Add LayoutXLM (Xu et al., 2021) to D-LANG; add UDOP and TILT to D-PARSE-INTENT/D-LAYOUT prior art; add a Zhang–Shasha citation where invoked; reduce reliance on internal [1]/[10]/[25]/[34]/[35]/[51] by attributing dimension definitions to them once and not re-citing them per paragraph.
 
 **Minor issues (15):**
 1. *Abstract, sentence 2* — 'SAVIOR-Bench, ParseBench' are bracketed as 'internal benchmark line' but ParseBench is upstream `hyprbots/parsebench` Apache-2.0 / LlamaIndex — public, not internal.
@@ -97,28 +95,27 @@ These require human or follow-up review:
 14. *§Abstract and §1 'sixteen-document-type taxonomy'* — Taxonomy is named but never enumerated in the body; reader must infer from Appendix B.4 references to T-01…T-16.
 15. *§D-DOWNSTREAM 'Models surveyed' (extractor pins)* — Notes that v0 pin Qwen 3.6-35B-A3B is a Hyperbots IP fine-tune served at `http://135.233.113.234:6006/v1` — exposing an internal IP/port in an external-facing literature review is poor practice and possibly a security concern.
 
-
 ### CTO-org technical reviewer — verdict: **ACCEPT-WITH-CHANGES**
 
 > The literature review is thorough and largely tracks the framework spec and dossier, but it contains several factual inaccuracies in benchmark numbers and dimension names, multiple speculative 2026 vendor pins that read as fabricated, and a handful of model-lineage claims that contradict public model cards. The PaIRS attribution and Chandra native-bbox claims are consistent with STATUS/dossier evidence and check out. With the targeted fixes below it can ship; without them, several leaderboard-adjacent numbers will mislead readers.
 
 **Major issues (8):**
 1. *§2 D-LAYOUT / Prior benchmarks — OmniDocBench* — OmniDocBench is described as '1,355–1,651 PDF pages, 10 document types, 5 layout types, 5 languages, 100k+ region annotations with reading order' — the framework spec and dataset table in this same doc (Appendix B.1) say 981 PDF pages, 9 doc types, 4 layout types. The 1,355–1,651 and '5 languages' numbers appear fabricated or conflated with v1.5.
-   - Fix: Reconcile to a single authoritative figure (981 pages / 9 doc types / 4 layout types per OmniDocBench v1 paper [4]) or explicitly cite v1.5's expanded counts with the v1.5 reference; do not present a range without a source per figure.
+ - Fix: Reconcile to a single authoritative figure (981 pages / 9 doc types / 4 layout types per OmniDocBench v1 paper [4]) or explicitly cite v1.5's expanded counts with the v1.5 reference; do not present a range without a source per figure.
 2. *§2 D-COST-LATENCY / Models surveyed — 'GLM-OCR 0.9B at 94.62 OmniDocBench, PaddleOCR-VL-1.5 at 94.50'* — PaddleOCR-VL-1.5 is reported as 94.5% on OmniDocBench v1.5 in §2 D-OCR but as '94.50 OmniDocBench' (unstratified) in §2 D-COST-LATENCY, and a GLM-OCR 0.9B score of 94.62 has no citation and is not in the dossier. MinerU2.5 is also separately quoted as 'overall 90.67' — these aggregate numbers conflate v1 and v1.5 scores under one label.
-   - Fix: For every OmniDocBench score, state version (v1 vs v1.5) and metric variant; remove the unsupported GLM-OCR 0.9B 94.62 unless a primary source can be cited.
+ - Fix: For every OmniDocBench score, state version (v1 vs v1.5) and metric variant; remove the unsupported GLM-OCR 0.9B 94.62 unless a primary source can be cited.
 3. *Appendix C — Vendor & API Pin Table (OpenAI / Anthropic / Gemini rows)* — Multiple model snapshots dated 2026 are speculative and unverifiable as of 2026-06-16: 'claude-opus-4-8 (rel. 2026-05-28)', 'claude-opus-4-7', 'gpt-5.4 thinking/pro (2026-03-05)', 'gpt-5.4-mini/-nano (2026-03-17)', 'gpt-5.2-chat (2026-02-10)', 'gemini-3.1-pro', 'mistral-large-2512'. These look invented rather than verified against vendor cards; many carry no citation and several contradict the PENDING-CONFIRMATION flag they sit next to.
-   - Fix: Either pin each row to a verifiable vendor release-note URL with retrieval date, or downgrade all unverified 2026 entries to PENDING-CONFIRMATION and drop the dated snapshot strings. Do not present invented release dates as factual.
+ - Fix: Either pin each row to a verifiable vendor release-note URL with retrieval date, or downgrade all unverified 2026 entries to PENDING-CONFIRMATION and drop the dated snapshot strings. Do not present invented release dates as factual.
 4. *Appendix A — Model Lineage / 'Qwen3.6-35B-A3B' and 'Qwen3.6-VL-A3B'* — The doc treats Qwen3.6 as an established Apache-2.0 MoE VLM with a 35B-total/3B-active spec and a HF id 'Qwen/Qwen3.6-VL-A3B'. Qwen3.6 is not a publicly released Qwen line as of the document's cutoff; the framework spec and dossier consistently call it 'Qwen 3.6-35B-A3B (Hyperbots IP fine-tune, served at 135.233.113.234:6006)'. Externalizing it as if it were a public OSS model with an Apache-2.0 HF repo misrepresents lineage and risks leaking the internal endpoint as the canonical pin.
-   - Fix: Reclassify Qwen3.6-A3B in Appendix A as an internal Hyperbots fine-tune (base = Qwen3-VL or equivalent, per dossier §2.5), license = Internal, and remove the speculative 'Qwen/Qwen3.6-VL-A3B' HF pin. Move to A.2 PENDING.
+ - Fix: Reclassify Qwen3.6-A3B in Appendix A as an internal Hyperbots fine-tune (base = Qwen3-VL or equivalent, per dossier §2.5), license = Internal, and remove the speculative 'Qwen/Qwen3.6-VL-A3B' HF pin. Move to A.2 PENDING.
 5. *§2 D-PARSE-INTENT / Models surveyed — 'Mistral-Large-3-675B'* — Mistral-Large-3 at 675B parameters is unverified and contradicts Mistral's published Large-2 (123B) lineage; Appendix A.2 already flags this as DOSSIER-only. Stating '675B' in body text alongside vision capability presents it as fact.
-   - Fix: In §2 D-PARSE-INTENT and §2 D-DOC-QUALITY and Appendix A, drop the '675B' number unless cited to a Mistral release note; describe as 'Mistral-Large-3 (parameter count unverified)'.
+ - Fix: In §2 D-PARSE-INTENT and §2 D-DOC-QUALITY and Appendix A, drop the '675B' number unless cited to a Mistral release note; describe as 'Mistral-Large-3 (parameter count unverified)'.
 6. *§2 D-OCR / Models surveyed — 'PaddleOCR-VL-1.5 (0.9B ERNIE-4.5 backbone)' and §2 D-DOC-QUALITY* — PaddleOCR-VL-1.5's backbone is described as 'ERNIE-4.5-0.3B LM + NaViT-style visual enc' (Appendix A) yet body text calls it a '0.9B ERNIE-4.5 backbone' — internally inconsistent. The 0.9B is the total VLM size, not the LM-backbone size; this matters for any cost-vs-capability comparison.
-   - Fix: Pick one description and use it everywhere: 'PaddleOCR-VL-1.5 is a 0.9B-total VLM (≈0.3B ERNIE-4.5 LM + NaViT-style visual encoder)'.
+ - Fix: Pick one description and use it everywhere: 'PaddleOCR-VL-1.5 is a 0.9B-total VLM (≈0.3B ERNIE-4.5 LM + NaViT-style visual encoder)'.
 7. *§2 D-DOWNSTREAM / Models surveyed — DH-001 FieldRecall numbers* — The text reports 'DH-001 FieldRecall 0.4099 at n=95, CI95 [0.3454, 0.4784]' for Qwen3.6 and references the Hyperbots IP endpoint http://135.233.113.234:6006/v1 by IP. Per project guardrails internal corpora numbers and internal endpoints should not be externalized; this is an external-flavored lit review.
-   - Fix: Strip the raw IP endpoint from the reference text (replace with 'internal endpoint') and gate the n=95 FieldRecall number behind an 'internal-only' marker, or remove it from the external version.
+ - Fix: Strip the raw IP endpoint from the reference text (replace with 'internal endpoint') and gate the n=95 FieldRecall number behind an 'internal-only' marker, or remove it from the external version.
 8. *Appendix C / Mistral row — 'mistral-large-2512' pricing discrepancy* — The row lists two contradictory price points ($2/$6 vs $0.50/$1.50 per 1M tok) and a snapshot 'mistral-large-2512' that does not match Mistral's published versioning convention. PENDING-CONFIRMATION is flagged but the contradictory numbers should not appear in a published table.
-   - Fix: Remove the conflicting price line until a single source can be cited; replace with a single PENDING-CONFIRMATION row referencing vendor's pricing page with retrieval date.
+ - Fix: Remove the conflicting price line until a single source can be cited; replace with a single PENDING-CONFIRMATION row referencing vendor's pricing page with retrieval date.
 
 **Minor issues (15):**
 1. *§2 D-OCR / Prior benchmarks — OCRBench v2* — '10,000 human-verified QA pairs across 23 tasks and 31 scenarios' contradicts Appendix B.1's '10k+ instances / 31 task types / 9 scenarios'. Task/scenario counts swap between sections.
@@ -137,23 +134,22 @@ These require human or follow-up review:
 14. *§2 D-OCR / 'GLM-OCR (edit-distance 0.019, rank-1 specialist on the SAVIOR leaderboard)'* — Number not in dossier §2.4 or §2.5 — appears to come from SAVIOR §5.1.4 but no per-claim citation line is given.
 15. *Appendix B.1 / DocVQA training-data claim* — 'Known-train for InternVL, Qwen-VL, GPT-4o (publicly stated)' — GPT-4o has not publicly stated DocVQA training inclusion; this is an inference.
 
-
 ### ABM-GTM hub brand reviewer — verdict: **ACCEPT-WITH-CHANGES**
 **Major issues (7):**
 1. *References [11], [25], [34], [35], [38], [42], [43], [51], [52], [59], [123], [128], [129] and inline §2 D-OCR / D-PARSE-INTENT (lines 64, 516, 544, 562, 564, 568, 578, 580, 596, 598, 612, 740, 750, 752)* — Internal absolute filesystem paths under /Users/niyati/Desktop/... are embedded in the bibliography and in some inline references. This leaks the author's local workstation layout and is not appropriate for an externally published artifact.
-   - Fix: Replace every /Users/niyati/... reference with a paraphrased citation form (e.g., 'Hyperbots internal spec, PARSE-DEEP-BENCHMARK-FRAMEWORK v0 (2026-05-27)' or a GitHub Pages URL once the doc is published via hyperapi-gtm-hub). Strip the `file:///Users/...` URIs entirely; if no public URL exists, mark 'internal artifact, available on request'.
+ - Fix: Replace every /Users/niyati/... reference with a paraphrased citation form (e.g., 'Hyperbots internal spec, PARSE-DEEP-BENCHMARK-FRAMEWORK v0 (2026-05-27)' or a GitHub Pages URL once the doc is published via hyperapi-gtm-hub). Strip the `file:///Users/...` URIs entirely; if no public URL exists, mark 'internal artifact, available on request'.
 2. *§2 D-OCR / 'Models surveyed' (line 44) and §2 D-DOC-QUALITY / SAVIOR-Bench v1 (line 183)* — Customer / counterparty name 'Eskimo' (and 'CJ Logistics') appear as named real-world data sources in 'SOULSHINE / bol-grn (Hyperbots-internal) — Eskimo 140-page, CJ Logistics 56-page outliers'. Per the recurring leak guardrail (prior Mahindra/Eskimo incident) named customers must not be externalized without consent.
-   - Fix: Anonymize to e.g. 'two large-document outliers (140-page and 56-page BoLs from internal logistics partners)'. Confirm with CEO/CTO before any external publication if specific partner names are needed.
+ - Fix: Anonymize to e.g. 'two large-document outliers (140-page and 56-page BoLs from internal logistics partners)'. Confirm with CEO/CTO before any external publication if specific partner names are needed.
 3. *§Abstract (line 8) and §2 throughout where HyperAPI fine-tune cells are quoted (e.g., line 72 'hyperapi-parse-intent [FT] leads at F1 0.8328'; line 264 'Qwen 3.6-35B-A3B (Hyperbots IP fine-tune...)' )* — The mandated verbatim phrase 'Per apis.hyperbots.com' does not appear anywhere in the document, yet HyperAPI accuracy numbers (F1 0.8328 / WER 0.2589, FieldRecall 0.4099, etc.) are cited as facts. This violates the brand guardrail requiring that phrase wherever a HyperAPI accuracy claim is made.
-   - Fix: Add 'Per apis.hyperbots.com' (verbatim) as a parenthetical or footnote at the first occurrence of every HyperAPI accuracy claim, and confirm the same on Appendix A model-lineage table rows for hyperapi-parse-intent [FT] and Qwen 3.6 IP fine-tune.
+ - Fix: Add 'Per apis.hyperbots.com' (verbatim) as a parenthetical or footnote at the first occurrence of every HyperAPI accuracy claim, and confirm the same on Appendix A model-lineage table rows for hyperapi-parse-intent [FT] and Qwen 3.6 IP fine-tune.
 4. *Appendix C / line 484 ('Vendors' published prices...') and §2 D-OCR line 264 (Qwen 3.6 served at http://135.233.113.234:6006/v1)* — An internal model-serving IP/port (`http://135.233.113.234:6006/v1`) is exposed in published prose. This is both a security smell and an internal-infrastructure leak inappropriate for an external GitHub Pages publication.
-   - Fix: Replace with 'a Hyperbots-internal vLLM endpoint (address withheld)'. Audit the whole doc for additional IPs, hostnames, or auth strings.
+ - Fix: Replace with 'a Hyperbots-internal vLLM endpoint (address withheld)'. Audit the whole doc for additional IPs, hostnames, or auth strings.
 5. *§Abstract (line 8) and §1 Introduction (lines 12-16)* — The abstract reads partly like an internal memo: it name-drops project artifacts ('the sixteen-document-type taxonomy', 'dataset_95', references to BBOX-SILVER-PIPELINE-SPEC, BLK-18, Q-DOSS-2, Q-DF-3/5/7, R1–R10, T-01..T-16 etc. used throughout without expansion) that an arXiv reader cannot decode. Many acronyms (GTRM, PaIRS, F-B, BLK-XX, Q-DF-N, R1–R10, T-NN, F1/F5/F8 'failure mode' codes, L-AR) are never expanded on first use.
-   - Fix: Rewrite the abstract to be self-contained (no internal codenames). Add a one-paragraph 'Notation' subsection after §1 that expands: GTRM = mean(GriTS, TableRecordMatch); PaIRS = Pairwise spatial Relationship Score; T-01..T-16 = 16 document-type codes (list table); R1–R10 = SAVIOR-Bench risk items; F1..F8 = SAVIOR failure-mode taxonomy; BLK-N = framework blocker IDs; Q-DF-N / Q-DOSS-N = open-question IDs; L-AR = right-to-left/Arabic language stratum; [FT] = Hyperbots-fine-tuned cell. Expand on first use throughout.
+ - Fix: Rewrite the abstract to be self-contained (no internal codenames). Add a one-paragraph 'Notation' subsection after §1 that expands: GTRM = mean(GriTS, TableRecordMatch); PaIRS = Pairwise spatial Relationship Score; T-01..T-16 = 16 document-type codes (list table); R1–R10 = SAVIOR-Bench risk items; F1..F8 = SAVIOR failure-mode taxonomy; BLK-N = framework blocker IDs; Q-DF-N / Q-DOSS-N = open-question IDs; L-AR = right-to-left/Arabic language stratum; [FT] = Hyperbots-fine-tuned cell. Expand on first use throughout.
 6. *§2 D-DOC-QUALITY (line 200, 'F-B study panel') and §2 D-LAYOUT (line 117, 'BLK-14'), §3 (line 490, 'BLK-18 / PENDING-MAXTOKEN')* — Numerous orphan acronyms / project shorthand ('F-B study panel', 'BLK-14', 'BLK-18', 'PENDING-MAXTOKEN', 'PENDING-SDK', 'BLOCKED-AZURE-LAG', 'dataset_95', 'out7 corpus', 'realqa', 'inhouse-v1', 'soulshine1/soulshine2') appear without definition and read as internal-tracker noise to an outside reader.
-   - Fix: Either expand on first use ('the F-B (Foundation vs. Baseline) panel of 10 documents'), demote to footnote, or remove. Replace tracker IDs with prose ('an open blocker on Azure snapshot availability') in publish-ready text.
+ - Fix: Either expand on first use ('the F-B (Foundation vs. Baseline) panel of 10 documents'), demote to footnote, or remove. Replace tracker IDs with prose ('an open blocker on Azure snapshot availability') in publish-ready text.
 7. *Throughout §2 (Tone) — e.g., line 481 'Mathpix remains best-in-class for math-equation OCR'; §2 D-LAYOUT line 99 'supplies the strongest document-parsing benchmark'; §2 D-OCR line 26 'most widely cited LMM-era OCR benchmark'; §2 D-PARSE-INTENT line 58 'de facto entry-level KIE benchmark'* — Promotional / superlative adjectives ('best-in-class', 'strongest', 'most widely cited', 'de facto') are used without citation, contrary to the researcher-not-advocate brand guardrail and the tone rule against unsupported promotional adjectives.
-   - Fix: Soften to neutral, source-bound language ('Mathpix is commonly cited for math-equation OCR [cite]'; 'one of the most-cited LMM-era OCR benchmarks per Google Scholar citation count as of 2026-06 [cite]'). Remove 'strongest', 'best-in-class', 'de facto' unless a citation backs the claim.
+ - Fix: Soften to neutral, source-bound language ('Mathpix is commonly cited for math-equation OCR [cite]'; 'one of the most-cited LMM-era OCR benchmarks per Google Scholar citation count as of 2026-06 [cite]'). Remove 'strongest', 'best-in-class', 'de facto' unless a citation backs the claim.
 
 **Minor issues (12):**
 1. *§2 D-OCR (line 41) — Chandra model id 'datalab-to/chandra-ocr-2'* — Repo namespace is 'datalab-to' — likely a typo for 'datalab-to' vs. the real HF org 'datalab-to'/'datalab-to'; verify the canonical org (it is 'datalab-to' on HF? actually 'datalab-to' may be wrong — confirm 'datalab-to' vs 'datalab-to').
@@ -169,12 +165,10 @@ These require human or follow-up review:
 11. *§Abstract uses 'we' (line 8) and §3 uses 'we' (line 488)* — First-person plural is fine in intro/discussion but is also sprinkled across §2 (e.g., 'to our knowledge' line 115, 'per our smoke verification' line 135). Consider whether voice is consistent with arXiv conventions.
 12. *Appendix C row 'Anthropic | Claude API' (line 460)* — Lists 'claude-opus-4-8 (flagship, rel. 2026-05-28)' as GA. This should be cross-checked against the claude-api skill / Anthropic docs before externalization to avoid embarrassing a vendor-fact error.
 
-
 ## 5. Files
 - v1 (original, unedited): `LIT-REVIEW-2026-06-16.md` / `.html` / `.pdf`
 - v2 (audited, corrected): `LIT-REVIEW-2026-06-16-v2.md` / `.html` / `.pdf`
 - This audit trail: `LIT-REVIEW-2026-06-16-REVIEW.md`
-
 
 ---
 
@@ -186,11 +180,11 @@ Workflow `wo4mqksfy` (~3 min wall, 196k tokens, 6 agents) produced verified fixe
 
 1. **FUNSD/CORD/SROIE/SAVIOR consolidation** — restruct:corpora-dedup agent returned 5 canonical Appendix B.1 paragraphs + 11 cross-reference replacements. Applied. Drift between scattered counts (e.g., SROIE "626 train / 347 test" vs "973 receipts") resolved to one authoritative phrasing per corpus.
 2. **Chandra description consolidation** — restruct:chandra-dedup returned 1 canonical Appendix A paragraph + 3 cross-reference replacements for D-LAYOUT / D-BBOX / D-TABLE. Applied.
-3. **Foundational works added** — 4 verified new references appended to bibliography:
-   - LayoutXLM (Xu et al. 2021, arXiv:2104.08836) — inserted in §D-LANG XFUND row.
-   - UDOP (Tang et al., CVPR 2023, arXiv:2212.02623) — inserted near M6Doc in §D-LAYOUT.
-   - TILT (Powalski et al., ICDAR 2021, arXiv:2102.09550) — inserted in §D-PARSE-INTENT prior art.
-   - Zhang-Shasha (1989, SIAM J. Computing) — inserted in §D-TABLE where TEDS/GTRM is introduced.
+3. **Foundational works added** — 4 verified new references appended to bibliography
+ - LayoutXLM (Xu et al. 2021, arXiv:2104.08836) — inserted in §D-LANG XFUND row.
+ - UDOP (Tang et al., CVPR 2023, arXiv:2212.02623) — inserted near M6Doc in §D-LAYOUT.
+ - TILT (Powalski et al., ICDAR 2021, arXiv:2102.09550) — inserted in §D-PARSE-INTENT prior art.
+ - Zhang-Shasha (1989, SIAM J. Computing) — inserted in §D-TABLE where TEDS/GTRM is introduced.
 4. **LayoutLMv3 97.46 verified CORRECT** — Table 1 of arXiv:2204.08387 confirms LayoutLMv3-LARGE = 97.46 F1 on CORD (official 800/100 split); base = 96.56. **BUT** the SROIE 95.2 claim was mis-cited: it belongs to the **original** LayoutLM v1 (Xu et al. KDD 2020, arXiv:1912.13318), not v3 (which does not report SROIE). Fixed: kept CORD claim, added v3 details (Table 1, split), reattributed SROIE to new sub-entry [76b] LayoutLM v1 with the precise 95.24 number.
 5. **OCRBench v2 counts harmonized** — canonical: **10,000 QA / 23 tasks / 31 scenarios** (verified via arXiv:2501.00321 abstract + project page). First author is **Fu**, not Liu. Ref [125] redirected to [3]: `[125] See [3]. (Duplicate entry merged; canonical ref is [3].)`. Three inline mentions across §D-OCR / §D-LANG / Appendix B harmonized.
 6. **HITL scan** — **0 hits**. No forbidden brand framing in v2. Clean.
@@ -210,7 +204,6 @@ Workflow `wo4mqksfy` (~3 min wall, 196k tokens, 6 agents) produced verified fixe
 - `LIT-REVIEW-2026-06-16-v3.md` / `.html` / `.pdf`
 - Aggregate workflow output: `/tmp/litreview-v3/agg.json`
 - Applier log: `/tmp/litreview-v3/apply-log.txt`
-
 
 ---
 
@@ -290,8 +283,7 @@ Workflow `wmzumshb3` launched 7 agents (5 cite-verify + 2 deep critique). 5 cite
 
 ### 7.3 Honest stance on the senior critique
 
-The senior reviewer's verdict is **REWORK** — material findings, not nits. These are NOT auto-applied to v4 because each one is a positioning / contribution-claim / scope decision, not a mechanical fix:
-
+The senior reviewer's verdict is **REWORK** — material findings, not nits. These are NOT auto-applied to v4 because each one is a positioning / contribution-claim / scope decision, not a mechanical fix
 - *MECE break (D-DOC-QUALITY / D-LANG are stratifications)* — would require restructuring the framework spec itself, upstream of this lit review.
 - *PaIRS circular novelty* — requires either external validation (deploy PaIRS publicly + get adoption) or de-emphasis in the framework.
 - *Contribution claim does not defend at NeurIPS/ICML main-track bar* — recommendation is to re-position as a NeurIPS D&B (Datasets & Benchmarks) track submission, which is a valid path but a strategic decision.
@@ -372,9 +364,8 @@ D-BBOX intro now opens with a "*Relation to D-LAYOUT*" sentence acknowledging th
 
 ### 8.7 v5 artifacts
 - `LIT-REVIEW-2026-06-16-v5.{md,html,pdf}` (canonical, critique-applied)
-- Published: https://niyatic.github.io/parse-x-litreview/ (v5 is now the index target)
+- Published: (v5 is now the index target)
 - This audit trail: `LIT-REVIEW-2026-06-16-REVIEW.md`
-
 
 ---
 
@@ -407,15 +398,13 @@ Workflow `wkv05glkm` ran 4 parallel coverage agents. 3 returned cleanly; math+cl
 
 ### 9.4 v6 artifacts
 - `LIT-REVIEW-2026-06-16-v6.{md,html,pdf}` (canonical, coverage-extended)
-- Published: https://niyatic.github.io/parse-x-litreview/ (v6 promoted to landing)
-
+- Published: (v6 promoted to landing)
 
 ---
 
 ## 10. v7 — Content critique applied (MUST-ADD + NeurIPS-shape + definitions, 2026-06-16)
 
-Workflow `wfn514jth` (3 critique agents) and 1 retry Agent all died on socket disconnects (recurring infrastructure pattern on heavy web-tool agents); critique completed in main loop via WebSearch + direct grep audit, written to `LIT-REVIEW-2026-06-16-CONTENT-CRITIQUE.md`. The applied fixes:
-
+Workflow `wfn514jth` (3 critique agents) and 1 retry Agent all died on socket disconnects (recurring infrastructure pattern on heavy web-tool agents); critique completed in main loop via WebSearch + direct grep audit, written to `LIT-REVIEW-2026-06-16-CONTENT-CRITIQUE.md`. The applied fixes
 ### 10.1 MUST-ADD content (5 items, 10 new references)
 - **Extend Parse 2.0 [188] + RealDoc-Bench [189]** added to §2.8 IDP landscape (user explicitly flagged Extend Parse 2.0 as missing).
 - **Grok 4 / 4.3 (xAI) [190]** and **Llama 4 family (Scout / Maverick / Behemoth) [191]** added to §D-OCR Models surveyed as "2025-2026 frontier additions" (both 0 mentions in v6).
@@ -452,8 +441,7 @@ Workflow `wfn514jth` (3 critique agents) and 1 retry Agent all died on socket di
 ### 10.6 v7 artifacts
 - `LIT-REVIEW-2026-06-16-v7.{md,html,pdf}`
 - Content critique source: `LIT-REVIEW-2026-06-16-CONTENT-CRITIQUE.md`
-- Published: https://niyatic.github.io/parse-x-litreview/ (v7 promoted to landing)
-
+- Published: (v7 promoted to landing)
 
 ---
 
@@ -463,18 +451,18 @@ Workflow `wgei6yhl6` ran 4 parallel copy-edit agents on disjoint sections of v7 
 
 ### 11.1 Edit categorisation (top reasons)
 
--   9 edits · first-person-plural overuse
--   8 edits · colloquialism
--   7 edits · informal phrasing
--   7 edits · comma splice
--   6 edits · filler removal
--   5 edits · promotional adjective
--   5 edits · informal connective
--   5 edits · heading punctuation consistenc
--   3 edits · clarity
--   3 edits · fragment to full sentence
--   3 edits · informal verb
--   3 edits · comma splice and first-person-
+- 9 edits · first-person-plural overuse
+- 8 edits · colloquialism
+- 7 edits · informal phrasing
+- 7 edits · comma splice
+- 6 edits · filler removal
+- 5 edits · promotional adjective
+- 5 edits · informal connective
+- 5 edits · heading punctuation consistenc
+- 3 edits · clarity
+- 3 edits · fragment to full sentence
+- 3 edits · informal verb
+- 3 edits · comma splice and first-person-
 
 ### 11.2 Application stats
 - Applied: **136** of 136
@@ -506,8 +494,7 @@ Workflow `wgei6yhl6` ran 4 parallel copy-edit agents on disjoint sections of v7 
 
 ### 11.5 v8 artifacts
 - `LIT-REVIEW-2026-06-16-v8.{md,html,pdf}`
-- Published: https://niyatic.github.io/parse-x-litreview/ (v8 promoted to landing)
-
+- Published: (v8 promoted to landing)
 
 ---
 
@@ -541,4 +528,4 @@ A new subsection after Appendix C presents the in-house F-B numbers as a *prelim
 
 ### 12.4 v9 artifacts
 - `LIT-REVIEW-2026-06-16-v9.{md,html,pdf}`
-- Published: https://niyatic.github.io/parse-x-litreview/ (v9 promoted to landing)
+- Published: (v9 promoted to landing)

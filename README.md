@@ -2,8 +2,6 @@
 
 A NeurIPS-style academic literature review (~39 pages, 159 references) surveying prior art for each of the nine measurement dimensions defined by the Parse-x Deep Benchmark Framework. Researcher-not-advocate stance: prior work is named for what it measures AND what it does not measure relative to the framework.
 
-**Read it**: [https://niyatic.github.io/parse-x-litreview/](https://niyatic.github.io/parse-x-litreview/)
-
 ## Versions
 
 The review went through four independent revision passes; all are preserved in `docs/`.
